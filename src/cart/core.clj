@@ -16,11 +16,11 @@
 (defn get-cart [db userid]
   (get db userid))
 
-(def db {42 {:userid 42
-             :items  [{:id    1
-                       :name  "t-shirt"
-                       :price {:currency "eur"
-                               :amount   40}}]}})
+(def db (atom {42 {:userid 42
+                   :items  [{:id    1
+                             :name  "t-shirt"
+                             :price {:currency "eur"
+                                     :amount   40}}]}}))
 
 (defrecord Money [currency amount])
 (defrecord Cart [userid items])
@@ -35,9 +35,9 @@
 (defn remove-items [cart itemIds]
   (update cart :items #(remove (fn [{:keys [id]}] ((set itemIds) id)) %)))
 
-(def catalog {1 {:id 1
+(def catalog {1 {:id   1
                  :name "apples"}
-              2 {:id 2
+              2 {:id   2
                  :name "oranges"}})
 
 (defn get-catalog-items [ids]
@@ -57,13 +57,15 @@
        ["/:userid"
         ["" {:get {:parameters {:path [:map [:userid :int]]}
                    :handler    (fn [{{{:keys [userid]} :path} :parameters}]
-                                 {:status 200
-                                  :body   (get db userid)})}}]
+                                 (let [_ (when (nil? (get @db userid)) (swap! db add-cart (make-cart userid)))
+                                       cart (get @db userid)]
+                                   {:status 200
+                                    :body   cart}))}}]
         ["/items" {:post   {:parameters {:path [:map [:userid :int]]
                                          :body [:vector :int]}
                             :handler    (fn [{{{:keys [userid]} :path
                                                productIds       :body} :parameters}]
-                                          (let [cart (get-cart db userid)
+                                          (let [cart (get-cart @db userid)
                                                 products (get-catalog-items productIds)
                                                 new-cart (add-items cart products)]
                                             {:status 200
@@ -72,9 +74,9 @@
                                          :body [:vector :int]}
                             :handler    (fn [{{{:keys [userid]} :path
                                                productIds       :body} :parameters}]
-                                          (let [cart (get-cart db userid)]
+                                          (let [cart (get-cart @db userid)]
                                             {:status 200
-                                             :body (remove-items cart productIds)}))}}]]]
+                                             :body   (remove-items cart productIds)}))}}]]]
       {:data {:coercion   reitit.coercion.malli/coercion
               :muuntaja   m/instance
               :middleware [parameters/parameters-middleware ;; Query string
@@ -84,9 +86,9 @@
                            (exception/create-exception-middleware
                              (merge
                                exception/default-handlers
-                               {:reitit.coercion/request-coercion (coercion-error-handler 400)
+                               {:reitit.coercion/request-coercion  (coercion-error-handler 400)
                                 :reitit.coercion/response-coercion (coercion-error-handler 500)}))
-                           rrc/coerce-response-middleware ;; coerce for request + response
+                           rrc/coerce-response-middleware   ;; coerce for request + response
                            rrc/coerce-request-middleware]}})))
 
 
