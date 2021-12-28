@@ -36,33 +36,33 @@
 (defn remove-items [cart itemIds]
   (update cart :items #(remove (fn [{:keys [id]}] ((set itemIds) id)) %)))
 
-(def router
-  (ring/router
-    ["/cart"
-     ["/:userid" {:get    {:parameters {:path [:map [:userid :int]]}
-                           :handler    (fn [{{{:keys [userid]} :path} :parameters}]
-                                         {:status 200
-                                          :body   (get-cart db userid)})}
-                  :post   {:parameters {:path [:map [:userid :int]]
-                                        :body [:vector :int]}
-                           :handler    (fn [request]
-                                         {:status 200
-                                          :body   (get-in request [:parameters :body])})}
-                  :delete {:handler (fn [_]
-                                      {:status 200
-                                       :body   "DELETE"})}}]]
-    {:data {:coercion   reitit.coercion.malli/coercion
-            :muuntaja m/instance
-            :middleware [muuntaja/format-negotiate-middleware
-                         parameters/parameters-middleware
-                         muuntaja/format-request-middleware
-                         muuntaja/format-response-middleware
-                         rrc/coerce-request-middleware
-                         rrc/coerce-response-middleware
-                         exception/exception-middleware]}}))
+(def app
+  (ring/ring-handler
+    (ring/router
+      ["/cart"
+       ["/:userid"
+        ["" {:get {:parameters {:path [:map [:userid :int]]}
+                   :handler    (fn [{{{:keys [userid]} :path} :parameters}]
+                                 {:status 200
+                                  :body   (get db userid)})}}]
+        ["/items" {:post {:parameters {:path [:map [:userid :int]]
+                                       :body [:vector :int]}
+                          :handler    (fn [{{{:keys [userid]} :path
+                                             items            :body} :parameters}]
+                                        {:status 200
+                                         :body   {:userid userid
+                                                  :items  items}})}}]]]
+      {:data {:coercion   reitit.coercion.malli/coercion
+              :muuntaja   m/instance
+              :middleware [parameters/parameters-middleware
+                           muuntaja/format-negotiate-middleware
+                           muuntaja/format-response-middleware
+                           exception/exception-middleware
+                           muuntaja/format-request-middleware
+                           rrc/coerce-response-middleware
+                           rrc/coerce-request-middleware]}})))
 
 
-(def app (ring/ring-handler router))
 
 (defn run [port]
   (jetty/run-jetty #'app {:port port :join? false}))
