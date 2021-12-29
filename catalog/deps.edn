@@ -1,5 +1,6 @@
-{:paths ["src"]
- :deps  {ring/ring       {:mvn/version "1.9.4"}
-         metosin/reitit  {:mvn/version "0.5.15"}
-         metosin/malli   {:mvn/version "0.7.5"}
-         expound/expound {:mvn/version "0.8.9"}}}
+{:paths   ["src"]
+ :deps    {ring/ring       {:mvn/version "1.9.4"}
+           metosin/reitit  {:mvn/version "0.5.15"}
+           metosin/malli   {:mvn/version "0.7.5"}
+           expound/expound {:mvn/version "0.8.9"}}
+ :aliases {:main {:exec-fn   catalog.core/run}}}

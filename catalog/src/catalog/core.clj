@@ -8,5 +8,4 @@
 
 
 (defn run [_]
-  (println "Catalog")
-  (println (r/match-by-path router "/api/ping")))
+  (println "Catalog"))
