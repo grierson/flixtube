@@ -1,7 +1,0 @@
-{:paths ["src"]
- :deps  {ring/ring {:mvn/version "1.9.4"}
-         metosin/reitit {:mvn/version "0.5.15"}
-         metosin/malli {:mvn/version "0.5.1"}
-         expound/expound {:mvn/version "0.8.9"}}
- :aliases {:cart {:exec-fn cart.core/run}
-           :catalog {:exec-fn catalog.core/run}}}
