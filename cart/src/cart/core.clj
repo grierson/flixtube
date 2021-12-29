@@ -93,9 +93,9 @@
 
 
 
-(defn run [port]
-  (jetty/run-jetty #'app {:port port :join? false}))
+(defn run [opts]
+  (jetty/run-jetty #'app opts))
 
 (comment
-  (def dev-instance (run 3000))
+  (def dev-instance (run {:port 3000 :join? false}))
   (.stop dev-instance))
