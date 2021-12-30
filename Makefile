@@ -1,4 +1,4 @@
-.PHONY: all test cart catalog
+.PHONY: all cart catalog
 
 all:
 	echo "all"
@@ -10,6 +10,3 @@ cart:
 catalog:
 	echo "start catalog";
 	cd catalog/ && clj -X:main
-
-test:
-	echo "test"
