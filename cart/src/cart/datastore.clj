@@ -10,5 +10,5 @@
   CartRepository
   (create [_ cart]
     (swap! carts conj cart))
-  (fetch [_ id]
+  (fetch [_]
     @carts))

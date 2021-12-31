@@ -9,7 +9,9 @@
             [expound.alpha :as expound]
             [clojure.java.io :as io]
             [juxt.clip.core :as clip]
-            [aero.core :refer [read-config]]))
+            [aero.core :refer [read-config]]
+            [cart.datastore :as data])
+  (:import [cart.datastore MemoryRepo]))
 
 (defn add-cart [db {:keys [userid] :as cart}]
   (assoc db userid cart))
@@ -92,6 +94,10 @@
   (let [system-config (read-config (io/resource "config.edn"))]
     (clip/start system-config)
     @(promise)))
+
+(comment
+  (def system (clip/start {:components {:start (MemoryRepo.)}}))
+  (data/fetch (MemoryRepo.)))
 
 (comment
   (def dev-instance (run {:port 3000 :join? false}))
