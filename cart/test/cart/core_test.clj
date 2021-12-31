@@ -15,4 +15,7 @@
 (deftest cart-test
   (is (= (success {:userid 1 :items []})
          (request {:uri            "/cart/1"
+                   :request-method :get})))
+  (is (= (success {:userid 1 :items []})
+         (request {:uri            "/cart/42"
                    :request-method :get}))))

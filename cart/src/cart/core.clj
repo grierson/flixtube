@@ -1,26 +1,21 @@
 (ns cart.core
-  (:require [ring.adapter.jetty :as jetty]
-            [muuntaja.core :as m]
+  (:require [muuntaja.core :as m]
             [reitit.ring :as ring]
-            [reitit.coercion.malli]
-            [malli.core :as s]
+            [reitit.coercion.malli :as mcoercion]
             [reitit.ring.coercion :as rrc]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
             [reitit.ring.middleware.exception :as exception]
-            [expound.alpha :as expound]))
+            [expound.alpha :as expound]
+            [clojure.java.io :as io]
+            [juxt.clip.core :as clip]
+            [aero.core :refer [read-config]]))
 
 (defn add-cart [db {:keys [userid] :as cart}]
   (assoc db userid cart))
 
 (defn get-cart [db userid]
   (get db userid))
-
-(def db (atom {42 {:userid 42
-                   :items  [{:id    1
-                             :name  "t-shirt"
-                             :price {:currency "eur"
-                                     :amount   40}}]}}))
 
 (defrecord Money [currency amount])
 (defrecord Cart [userid items])
@@ -50,14 +45,14 @@
       (printer (-> exception ex-data :problems))
       (handler exception request))))
 
-(def app
+(defn app [db]
   (ring/ring-handler
     (ring/router
       ["/cart"
        ["/:userid"
         ["" {:get {:parameters {:path [:map [:userid :int]]}
                    :handler    (fn [{{{:keys [userid]} :path} :parameters}]
-                                 (let [_ (when (nil? (get @db userid)) (swap! db add-cart (make-cart userid)))
+                                 (let [_ (when (nil? (get-cart db userid)) (add-cart db (make-cart userid)))
                                        cart (get @db userid)]
                                    {:status 200
                                     :body   cart}))}}]
@@ -77,7 +72,7 @@
                                           (let [cart (get-cart @db userid)]
                                             {:status 200
                                              :body   (remove-items cart productIds)}))}}]]]
-      {:data {:coercion   reitit.coercion.malli/coercion
+      {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
               :middleware [parameters/parameters-middleware ;; Query string
                            muuntaja/format-negotiate-middleware ;; Content-Type + Accept headers
@@ -94,7 +89,9 @@
 
 
 (defn run [opts]
-  (jetty/run-jetty #'app opts))
+  (let [system-config (read-config (io/resource "config.edn"))]
+    (clip/start system-config)
+    @(promise)))
 
 (comment
   (def dev-instance (run {:port 3000 :join? false}))
