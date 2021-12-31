@@ -1,13 +1,8 @@
 {:components
- {:db
-  {:start (cart.datastore/->MemoryRepo)}
-
-  :router
-  {:start (cart.core/app (clip/ref :db))}
-
-  :http
-  {:start (ring.adapter.jetty/run-jetty
-            (clip/ref :router)
-            {:port  3000
-             :join? false})
-   :stop  (.stop this)}}}
+ {:db     {:start (cart.datastore/repository)}
+  :router {:start (cart.core/app (clip/ref :db))}
+  :http   {:start (ring.adapter.jetty/run-jetty
+                    (clip/ref :router)
+                    {:port  3000
+                     :join? false})
+           :stop  (.stop this)}}}
