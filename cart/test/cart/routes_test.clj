@@ -39,9 +39,9 @@
 
   (testing "Cart does exist"
     (let [id 1
-          cart (domain/make-cart id [])]
+          cart (make-cart)]
       (is (= (success cart)
              (request
-               (make-app {1 (domain/make-cart 1)})
+               (make-app {1 cart})
                {:uri            (str "/cart/" id)
                 :request-method :get}))))))
