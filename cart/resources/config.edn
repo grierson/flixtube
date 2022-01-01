@@ -1,6 +1,6 @@
 {:components
  {:db     {:start (cart.datastore/repository)}
-  :router {:start (cart.core/app (clip/ref :db))}
+  :router {:start (cart.routes/app (clip/ref :db))}
   :http   {:start (ring.adapter.jetty/run-jetty
                     (clip/ref :router)
                     {:port  3000

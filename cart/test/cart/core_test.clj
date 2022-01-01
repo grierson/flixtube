@@ -1,6 +1,6 @@
 (ns cart.core-test
   (:require [clojure.test :refer :all]
-            [cart.core :refer :all]
+            [cart.routes :refer :all]
             [clojure.data.json :as json]))
 
 (defn success [body]

@@ -1,4 +1,4 @@
-(ns cart.core
+(ns cart.routes
   (:require [muuntaja.core :as m]
             [reitit.ring :as ring]
             [reitit.coercion.malli :as mcoercion]
@@ -6,22 +6,8 @@
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
             [clojure.java.io :as io]
-            [cart.datastore :as data]))
-
-(defrecord Money [currency amount])
-(defrecord Cart [userid items])
-(defrecord CartItem [id name description price])
-
-(defn make-cart [id]
-  (->Cart id []))
-
-(def catalog {1 {:id   1
-                 :name "apples"}
-              2 {:id   2
-                 :name "oranges"}})
-
-(defn get-catalog-items [ids]
-  (vals (select-keys catalog ids)))
+            [cart.datastore :as data]
+            [cart.domain :as domain]))
 
 (defn app [db]
   (ring/ring-handler
@@ -30,25 +16,26 @@
        ["/:userid"
         ["" {:get {:parameters {:path [:map [:userid :int]]}
                    :handler    (fn [{{{:keys [userid]} :path} :parameters}]
-                                 (if-let [cart (data/fetch-by-id db userid)]
+                                 (let [cart (data/fetch-by-id db userid)]
                                    {:status 200
-                                    :body   cart}
-                                   {:status 200
-                                    :body   (data/add-cart db (make-cart userid))}))}}]
+                                    :body   cart}))}}]
         ["/items" {:post   {:parameters {:path [:map [:userid :int]]
                                          :body [:vector :int]}
                             :handler    (fn [{{{:keys [userid]} :path
                                                productIds       :body} :parameters}]
-                                          (let [products (get-catalog-items productIds)
-                                                new-cart (data/add-items db userid products)]
+                                          (let [cart (data/fetch-by-id db userid)
+                                                products (domain/get-catalog-items productIds)
+                                                new-cart (domain/add-items cart products)
+                                                _ (data/save db new-cart)]
                                             {:status 200
                                              :body   new-cart}))}
                    :delete {:parameters {:path [:map [:userid :int]]
                                          :body [:vector :int]}
                             :handler    (fn [{{{:keys [userid]} :path
                                                productIds       :body} :parameters}]
-                                          (do
-                                            (data/remove-items db userid productIds)
+                                          (let [cart (data/fetch-by-id db userid)
+                                                new-cart (domain/remove-items cart productIds)
+                                                _ (data/save db new-cart)]
                                             {:status 200}))}}]]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
