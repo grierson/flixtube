@@ -1,10 +1,13 @@
 (ns cart.datastore)
 
-(defn create [db {:keys [userid] :as cart}]
+(defn add-cart [db {:keys [userid] :as cart}]
   (swap! db assoc userid cart))
 
-(defn fetch [db]
-  @db)
+(defn add-items [db userid items]
+  (swap! db update-in [userid :items] concat items))
+
+(defn remove-items [db userid productIds]
+  (swap! db update-in [userid :items] (fn [coll] (remove (fn [{:keys [id]}] (contains? (set productIds) id)) coll))))
 
 (defn fetch-by-id [db id]
   (get @db id))
@@ -13,5 +16,6 @@
   (atom {}))
 
 (comment
-  (create state {:userid 2 :items []})
-  (fetch-by-id state 2))
+  (def temp (repository))
+  (add-cart temp {:userid 2 :items []})
+  (fetch-by-id temp 2))

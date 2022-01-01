@@ -15,12 +15,6 @@
 (defn make-cart [id]
   (->Cart id []))
 
-(defn add-items [cart items]
-  (update cart :items into items))
-
-(defn remove-items [cart itemIds]
-  (update cart :items #(remove (fn [{:keys [id]}] ((set itemIds) id)) %)))
-
 (def catalog {1 {:id   1
                  :name "apples"}
               2 {:id   2
@@ -36,28 +30,26 @@
        ["/:userid"
         ["" {:get {:parameters {:path [:map [:userid :int]]}
                    :handler    (fn [{{{:keys [userid]} :path} :parameters}]
-                                 (let [_ (prn userid)
-                                       _ (when (nil? (data/fetch-by-id db userid)) (data/create db (make-cart userid)))
-                                       cart (data/fetch-by-id db userid)
-                                       _ (prn cart)]
+                                 (if-let [cart (data/fetch-by-id db userid)]
                                    {:status 200
-                                    :body   cart}))}}]
+                                    :body   cart}
+                                   {:status 200
+                                    :body   (data/add-cart db (make-cart userid))}))}}]
         ["/items" {:post   {:parameters {:path [:map [:userid :int]]
                                          :body [:vector :int]}
                             :handler    (fn [{{{:keys [userid]} :path
                                                productIds       :body} :parameters}]
-                                          (let [cart (data/fetch-by-id db userid)
-                                                products (get-catalog-items productIds)
-                                                new-cart (add-items cart products)]
+                                          (let [products (get-catalog-items productIds)
+                                                new-cart (data/add-items db userid products)]
                                             {:status 200
                                              :body   new-cart}))}
                    :delete {:parameters {:path [:map [:userid :int]]
                                          :body [:vector :int]}
                             :handler    (fn [{{{:keys [userid]} :path
                                                productIds       :body} :parameters}]
-                                          (let [cart (data/fetch-by-id db userid)]
-                                            {:status 200
-                                             :body   (remove-items cart productIds)}))}}]]]
+                                          (do
+                                            (data/remove-items db userid productIds)
+                                            {:status 200}))}}]]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
               :middleware [parameters/parameters-middleware ;; Query string
@@ -71,7 +63,7 @@
 (comment
   (do
     (require
-     '[juxt.clip.repl :refer [start stop set-init! system]])
+      '[juxt.clip.repl :refer [start stop set-init! system]])
     (def system-config (clojure.edn/read-string (slurp (io/resource "config.edn"))))
     (set-init! (constantly system-config))
     (start))
