@@ -1,17 +1,18 @@
-{:deps    {ring/ring             {:mvn/version "1.9.4"}
-           metosin/reitit        {:mvn/version "0.5.15"}
-           metosin/malli         {:mvn/version "0.7.5"}
-           expound/expound       {:mvn/version "0.8.9"}
-           org.clojure/data.json {:mvn/version "2.4.0"}
-           juxt/clip             {:mvn/version "0.27.0"}
+{:deps    {ring/ring                   {:mvn/version "1.9.4"}
+           metosin/reitit              {:mvn/version "0.5.15"}
+           metosin/malli               {:mvn/version "0.7.5"}
+           expound/expound             {:mvn/version "0.8.9"}
+           org.clojure/data.json       {:mvn/version "2.4.0"}
+           juxt/clip                   {:mvn/version "0.27.0"}
            org.clojure/tools.namespace {:mvn/version "1.2.0"}}
  :paths   ["src" "resources"]
 
- :aliases {:main {:exec-fn   cart.core/run}
+ :aliases {:main {:exec-fn cart.core/run}
            :test {:extra-paths ["test"]
                   :extra-deps  {io.github.cognitect-labs/test-runner
                                 {:git/url "https://github.com/cognitect-labs/test-runner.git"
-                                 :sha     "cc75980b43011773162b485f46f939dc5fba91e4"}}
+                                 :sha     "cc75980b43011773162b485f46f939dc5fba91e4"}
+                                org.clojure/test.check {:mvn/version "1.1.1"}}
 
                   :main-opts   ["-m" "cognitect.test-runner"]
                   :exec-fn     cognitect.test-runner.api/test}}}

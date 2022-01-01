@@ -36,7 +36,8 @@
                                           (let [cart (data/fetch-by-id db userid)
                                                 new-cart (domain/remove-items cart productIds)
                                                 _ (data/save db new-cart)]
-                                            {:status 200}))}}]]]
+                                            {:status 200
+                                             :body new-cart}))}}]]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
               :middleware [parameters/parameters-middleware ;; Query string
