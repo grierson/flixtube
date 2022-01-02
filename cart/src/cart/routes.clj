@@ -37,14 +37,10 @@
                                                 new-cart (domain/remove-items cart productIds)
                                                 _ (data/save db new-cart)]
                                             {:status 200
-                                             :body new-cart}))}}]]]
+                                             :body   new-cart}))}}]]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
-              :middleware [parameters/parameters-middleware ;; Query string
-                           muuntaja/format-negotiate-middleware ;; Content-Type + Accept headers
-                           muuntaja/format-response-middleware ;;
-                           muuntaja/format-request-middleware
-                           rrc/coerce-response-middleware   ;; coerce for request + response
+              :middleware [rrc/coerce-response-middleware
                            rrc/coerce-request-middleware]}})))
 
 
