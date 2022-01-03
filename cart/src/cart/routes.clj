@@ -4,7 +4,6 @@
             [reitit.coercion.malli :as mcoercion]
             [reitit.ring.coercion :as rrc]
             [reitit.ring.middleware.muuntaja :as muuntaja]
-            [reitit.ring.middleware.parameters :as parameters]
             [clojure.java.io :as io]
             [cart.datastore :as data]
             [cart.domain :as domain]))
@@ -13,34 +12,38 @@
   (ring/ring-handler
     (ring/router
       ["/cart"
-       ["/:userid"
-        ["" {:get {:parameters {:path [:map [:userid :int]]}
-                   :handler    (fn [{{{:keys [userid]} :path} :parameters}]
-                                 (let [cart (data/fetch-by-id db userid)]
+       ["/:user-id"
+        ["" {:get {:parameters {:path [:map [:user-id :int]]}
+                   :handler    (fn [{{{:keys [user-id]} :path} :parameters}]
+                                 (let [_ (prn "userid " user-id)
+                                       cart (data/fetch-by-id db user-id)]
                                    {:status 200
                                     :body   cart}))}}]
-        ["/items" {:post   {:parameters {:path [:map [:userid :int]]
+        ["/items" {:post   {:parameters {:path [:map [:user-id :int]]
                                          :body [:vector :int]}
-                            :handler    (fn [{{{:keys [userid]} :path
+                            :handler    (fn [{{{:keys [user-id]} :path
                                                productIds       :body} :parameters}]
-                                          (let [cart (data/fetch-by-id db userid)
+                                          (let [cart (data/fetch-by-id db user-id)
                                                 products (domain/get-catalog-items productIds)
                                                 new-cart (domain/add-items cart products)
                                                 _ (data/save db new-cart)]
                                             {:status 200
                                              :body   new-cart}))}
-                   :delete {:parameters {:path [:map [:userid :int]]
+                   :delete {:parameters {:path [:map [:user-id :int]]
                                          :body [:vector :int]}
-                            :handler    (fn [{{{:keys [userid]} :path
+                            :handler    (fn [{{{:keys [user-id]} :path
                                                productIds       :body} :parameters}]
-                                          (let [cart (data/fetch-by-id db userid)
+                                          (let [cart (data/fetch-by-id db user-id)
                                                 new-cart (domain/remove-items cart productIds)
                                                 _ (data/save db new-cart)]
                                             {:status 200
                                              :body   new-cart}))}}]]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
-              :middleware [rrc/coerce-response-middleware
+              :middleware [muuntaja/format-negotiate-middleware ;; Content-Type + Accept headers
+                           muuntaja/format-response-middleware
+                           muuntaja/format-request-middleware
+                           rrc/coerce-response-middleware
                            rrc/coerce-request-middleware]}})))
 
 

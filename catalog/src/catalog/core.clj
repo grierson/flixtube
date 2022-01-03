@@ -8,21 +8,10 @@
 (def app
   (ring/ring-handler
     (ring/router
-      [["/product/:z" {:name ::plus
-                       :post {:parameters {:query [:map [:x int?]]
-                                           :body  [:map [:y int?]]
-                                           :path  [:map [:z int?]]}
-                              :responses  {200 {:body [:map [:total pos-int?]]}}
-                              :handler    (fn [{:keys [parameters] :as request}]
-                                            (clojure.pprint/pprint request)
-                                            (prn (-> parameters :query :x))
-                                            (prn (-> parameters :body :y))
-                                            (prn (-> parameters :path :z))
-                                            (let [total (+ (-> parameters :query :x)
-                                                           (-> parameters :body :y)
-                                                           (-> parameters :path :z))]
-                                              {:status 200
-                                               :body   {:total total}}))}}]]
+      [["/products" {:get {:parameters {:query [:map [:productIds [:sequential int?]]]}
+                           :handler    (fn [{{productIds :query} :parameters}]
+                                         {:status 200
+                                          :body   productIds})}}]]
       {:data {:coercion   mcoercion/coercion
               :middleware [rrc/coerce-request-middleware
                            rrc/coerce-response-middleware]}})))
@@ -30,7 +19,6 @@
 ;; Coerce =
 
 (comment
-  (app {:request-method :post
-        :uri            "/api/plus/3"
-        :query-params   {"x" "1"}
-        :body-params    {:y 2}}))
+  (app {:request-method :get
+        :uri            "/products"
+        :query-params   {"productIds" [1 2]}}))
