@@ -36,12 +36,3 @@
 (defn make-cart
   ([id] (->Cart id []))
   ([id items] (->Cart id items)))
-
-(def catalog {1 {:id   1
-                 :name "apples"}
-              2 {:id   2
-                 :name "oranges"}})
-
-(defn get-catalog-items [ids]
-  (vals (select-keys catalog ids)))
-

@@ -7,8 +7,9 @@
 (defn fetch-by-id [db cart-id]
   (get @db cart-id (domain/make-cart cart-id)))
 
-(defn repository []
-  (atom {}))
+(defn repository
+  ([] (atom {}))
+  ([state] (atom state)))
 
 (comment
   (def temp (repository))

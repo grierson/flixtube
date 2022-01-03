@@ -1,8 +1,11 @@
 {:components
- {:db     {:start (cart.datastore/repository)}
-  :router {:start (cart.routes/app (clip/ref :db))}
-  :http   {:start (ring.adapter.jetty/run-jetty
-                    (clip/ref :router)
-                    {:port  3000
-                     :join? false})
-           :stop  (.stop this)}}}
+ {:cartStore  {:start (cart.datastore/repository)}
+  :eventStore {:start (cart.events/repository)}
+  :router     {:start (cart.routes/app
+                        (clip/ref :cartStore)
+                        (clip/ref :eventStore))}
+  :http       {:start (ring.adapter.jetty/run-jetty
+                        (clip/ref :router)
+                        {:port  3000
+                         :join? false})
+               :stop  (.stop this)}}}

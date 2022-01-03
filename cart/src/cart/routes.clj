@@ -6,38 +6,48 @@
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [clojure.java.io :as io]
             [cart.datastore :as data]
-            [cart.domain :as domain]))
+            [cart.domain :as domain]
+            [cart.events :as events]
+            [cart.catalog-client :as catalog-client]))
 
-(defn app [db]
+(defn app [cartStore eventStore]
   (ring/ring-handler
     (ring/router
-      ["/cart"
-       ["/:user-id"
-        ["" {:get {:parameters {:path [:map [:user-id :int]]}
-                   :handler    (fn [{{{:keys [user-id]} :path} :parameters}]
-                                 (let [_ (prn "userid " user-id)
-                                       cart (data/fetch-by-id db user-id)]
-                                   {:status 200
-                                    :body   cart}))}}]
-        ["/items" {:post   {:parameters {:path [:map [:user-id :int]]
-                                         :body [:vector :int]}
-                            :handler    (fn [{{{:keys [user-id]} :path
-                                               productIds       :body} :parameters}]
-                                          (let [cart (data/fetch-by-id db user-id)
-                                                products (domain/get-catalog-items productIds)
-                                                new-cart (domain/add-items cart products)
-                                                _ (data/save db new-cart)]
-                                            {:status 200
-                                             :body   new-cart}))}
-                   :delete {:parameters {:path [:map [:user-id :int]]
-                                         :body [:vector :int]}
-                            :handler    (fn [{{{:keys [user-id]} :path
-                                               productIds       :body} :parameters}]
-                                          (let [cart (data/fetch-by-id db user-id)
-                                                new-cart (domain/remove-items cart productIds)
-                                                _ (data/save db new-cart)]
-                                            {:status 200
-                                             :body   new-cart}))}}]]]
+      [["/cart"
+        ["/:user-id"
+         ["" {:get {:parameters {:path [:map [:user-id :int]]}
+                    :handler    (fn [{{{:keys [user-id]} :path} :parameters}]
+                                  (let [cart (data/fetch-by-id cartStore user-id)]
+                                    {:status 200
+                                     :body   cart}))}}]
+         ["/items" {:post   {:parameters {:path [:map [:user-id :int]]
+                                          :body [:vector :int]}
+                             :handler    (fn [{{{:keys [user-id]} :path
+                                                productIds        :body} :parameters}]
+                                           (let [cart (data/fetch-by-id cartStore user-id)
+                                                 products (catalog-client/get-products productIds)
+                                                 new-cart (domain/add-items cart products)
+                                                 _ (data/save cartStore new-cart)]
+                                             {:status 200
+                                              :body   new-cart}))}
+                    :delete {:parameters {:path [:map [:user-id :int]]
+                                          :body [:vector :int]}
+                             :handler    (fn [{{{:keys [user-id]} :path
+                                                productIds        :body} :parameters}]
+                                           (let [cart (data/fetch-by-id cartStore user-id)
+                                                 new-cart (domain/remove-items cart productIds)
+                                                 _ (data/save cartStore new-cart)]
+                                             {:status 200
+                                              :body   new-cart}))}}]]]
+       ["/events" {:get {:parameters {:query [:map
+                                              [:start :int]
+                                              [:end {:optional? true
+                                                     :default   100} :int]]}
+                         :handler    (fn [{{{:keys [start end]} :query} :parameters}]
+                                       (let [events (events/get-events eventStore start end)]
+                                         (prn events)
+                                         {:status 200
+                                          :body   events}))}}]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
               :middleware [muuntaja/format-negotiate-middleware ;; Content-Type + Accept headers
