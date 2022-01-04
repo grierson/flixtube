@@ -31,7 +31,7 @@
   (update cart :items concat items))
 
 (defn remove-items [cart productIds]
-  (update cart :items (fn [coll] (remove (fn [{:keys [id]}] (contains? (set productIds) id)) coll))))
+  (update cart :items (fn [coll] (remove (fn [{:keys [product-id]}] (contains? (set productIds) product-id)) coll))))
 
 (defn make-cart
   ([id] (->Cart id []))

@@ -45,7 +45,6 @@
                                                      :default   100} :int]]}
                          :handler    (fn [{{{:keys [start end]} :query} :parameters}]
                                        (let [events (events/get-events eventStore start end)]
-                                         (prn events)
                                          {:status 200
                                           :body   events}))}}]]
       {:data {:coercion   mcoercion/coercion
