@@ -13,7 +13,7 @@
 
 (defn raise [db event content]
   (let [seq-number (next-seq-number db)]
-    (swap! db conj (->Event seq-number (datetime/local-date) event content))))
+    (swap! db conj (->Event seq-number (datetime/local-date-time) event content))))
 
 (defn get-events [db firstEvent lastEvent]
   (->> @db

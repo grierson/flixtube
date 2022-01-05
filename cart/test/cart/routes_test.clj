@@ -91,3 +91,23 @@
                    http-request)]
     (is (= 200 (:status response)))
     (is (= [] (:body response)))))
+
+(deftest adding-items-raises-event-test
+  (let [sut (make-app {:eventStore (events/repository)})
+
+        id 1
+
+        cart-http-request {:uri            (str "/cart/" id "/items")
+                           :request-method :post
+                           :path-params    {:user-id id}
+                           :body-params    [1 2]}
+        _ (request sut cart-http-request)
+
+        event-http-request {:uri            "/events"
+                            :request-method :get
+                            :query-params   {:start 1}}
+        response (request
+                   sut
+                   event-http-request)]
+    (is (= 200 (:status response)))
+    (is (not (empty? (:body response))))))

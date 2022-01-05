@@ -25,6 +25,10 @@
 (s/def ::cart
   (s/keys :req-un [::userid ::items]))
 
+(defn make-cart
+  ([id] (->Cart id []))
+  ([id items] (->Cart id items)))
+
 ;--- methods
 
 (defn add-items [cart items]
@@ -32,7 +36,3 @@
 
 (defn remove-items [cart productIds]
   (update cart :items (fn [coll] (remove (fn [{:keys [product-id]}] (contains? (set productIds) product-id)) coll))))
-
-(defn make-cart
-  ([id] (->Cart id []))
-  ([id items] (->Cart id items)))

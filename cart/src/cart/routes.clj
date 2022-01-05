@@ -20,6 +20,7 @@
                                   (let [cart (data/fetch-by-id cartStore user-id)]
                                     {:status 200
                                      :body   cart}))}}]
+
          ["/items" {:post   {:parameters {:path [:map [:user-id :int]]
                                           :body [:vector :int]}
                              :handler    (fn [{{{:keys [user-id]} :path
@@ -27,7 +28,8 @@
                                            (let [cart (data/fetch-by-id cartStore user-id)
                                                  products (catalog-client/get-products productIds)
                                                  new-cart (domain/add-items cart products)
-                                                 _ (data/save cartStore new-cart)]
+                                                 _ (data/save cartStore new-cart)
+                                                 _ (events/raise eventStore "ItemsAdded" new-cart)]
                                              {:status 200
                                               :body   new-cart}))}
                     :delete {:parameters {:path [:map [:user-id :int]]
@@ -36,13 +38,16 @@
                                                 productIds        :body} :parameters}]
                                            (let [cart (data/fetch-by-id cartStore user-id)
                                                  new-cart (domain/remove-items cart productIds)
-                                                 _ (data/save cartStore new-cart)]
+                                                 _ (data/save cartStore new-cart)
+                                                 _ (events/raise eventStore "ItemsRemoved" new-cart)]
+
                                              {:status 200
                                               :body   new-cart}))}}]]]
        ["/events" {:get {:parameters {:query [:map
-                                              [:start :int]
+                                              [:start {:optional? true
+                                                       :default   1} :int]
                                               [:end {:optional? true
-                                                     :default   100} :int]]}
+                                                     :default   Integer/MAX_VALUE} :int]]}
                          :handler    (fn [{{{:keys [start end]} :query} :parameters}]
                                        (let [events (events/get-events eventStore start end)]
                                          {:status 200
