@@ -1,7 +1,10 @@
 .PHONY: run test
 
 run:
-	clj -M -m cart.main
+	clojure -M -m cart.main
 
 test:
-	clj -X:test
+	clojure -X:test
+
+docker:
+	 docker run -p 3000:3000 12b2d8825650

@@ -1,17 +1,12 @@
-FROM openjdk:11
-WORKDIR /src
-COPY ["ShoppingCart/ShoppingCart.csproj", "ShoppingCart/"]
-RUN dotnet restore "ShoppingCart/ShoppingCart.csproj"
-COPY . .
-WORKDIR "/src/ShoppingCart"
-RUN dotnet build "ShoppingCart.csproj" -c Release -o /app/build
+FROM clojure
 
-FROM build AS publish
-RUN dotnet publish "ShoppingCart.csproj" -c Release -o /app/publish
-
-
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS final
 WORKDIR /app
-EXPOSE 80
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ShoppingCart.dll"]
+
+COPY deps.edn ./
+COPY src/ ./src/
+COPY resources/ ./resources/
+COPY Makefile ./
+
+EXPOSE 3000
+
+CMD ["make", "run"]
