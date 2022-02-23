@@ -1,0 +1,7 @@
+{:components
+ {:router     {:start (catalog.routes/app)}
+  :http       {:start (ring.adapter.jetty/run-jetty
+                        (clip/ref :router)
+                        {:port  3001
+                         :join? false})
+               :stop  (.stop this)}}}

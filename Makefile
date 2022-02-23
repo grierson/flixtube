@@ -5,8 +5,8 @@ all:
 
 cart:
 	echo "start cart";
-	cd cart/ && clj -X:main :port 3000 :join? false
+	cd cart/ && make run
 
 catalog:
 	echo "start catalog";
-	cd catalog/ && clj -X:main
+	cd catalog/ && make run
