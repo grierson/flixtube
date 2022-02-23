@@ -1,6 +1,5 @@
 (ns cart.events
-  (:require [java-time :as datetime]
-            [cart.domain :as domain]))
+  (:require [java-time :as datetime]))
 
 
 (defrecord Event [sequenceNumber occurrence name content])

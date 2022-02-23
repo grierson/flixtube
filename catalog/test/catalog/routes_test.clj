@@ -2,21 +2,16 @@
   (:require
     [clojure.test :refer :all]
     [catalog.routes :refer :all]
+    [jsonista.core :as j]
     [ring.mock.request :refer [request]]))
 
+(defn get-body [path]
+  (let [sut (app)]
+    (-> (request :get path) sut :body j/read-value)))
 
-(deftest example-server
+(deftest get-products-test
   (testing "GET"
-    (is (= (-> (request :get "/products?productIds=1,2")
-               app :body slurp)
-           "[1,2]"))
-    (is (= (-> {:request-method :get
-                :uri            "/products"
-                :query-string   "productIds=1,2"}
-               app :body slurp)
-           "[1,2]"))
-    (is (= (-> {:request-method :get
-                :uri            "/products"
-                :query-params {:productIds [1 2]}}
-               app :body slurp)
-           "[1,2]"))))
+    (is (= (get-body "/products?productIds=1")
+           [1]))
+    (is (= (get-body "/products?productIds=1,2")
+           [1, 2]))))

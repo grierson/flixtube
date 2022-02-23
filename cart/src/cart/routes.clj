@@ -4,6 +4,7 @@
             [reitit.coercion.malli :as mcoercion]
             [reitit.ring.coercion :as rrc]
             [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.parameters :as parameters]
             [clojure.java.io :as io]
             [cart.datastore :as data]
             [cart.domain :as domain]
@@ -54,11 +55,12 @@
                                           :body   events}))}}]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
-              :middleware [muuntaja/format-negotiate-middleware ;; Content-Type + Accept headers
-                           muuntaja/format-response-middleware
+              :middleware [parameters/parameters-middleware
+                           muuntaja/format-negotiate-middleware
                            muuntaja/format-request-middleware
-                           rrc/coerce-response-middleware
-                           rrc/coerce-request-middleware]}})))
+                           muuntaja/format-response-middleware
+                           rrc/coerce-request-middleware
+                           rrc/coerce-response-middleware]}})))
 
 
 (comment

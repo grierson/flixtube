@@ -1,6 +1,6 @@
 (ns cart.catalog-client
   (:require [clj-http.client :as client]
-            [clojure.data.json :as json]
+            [jsonista.core :as j]
             [cart.domain :as domain]))
 
 (def url "https://git.io/JeHiE")
@@ -8,7 +8,7 @@
 (defn- fetch-products [url]
   (let [p (promise)]
     (client/get url {:async? true}
-                (fn [request] (deliver p (json/read-json (:body request) true)))
+                (fn [request] (deliver p (j/read-value (:body request) j/keyword-keys-object-mapper)))
                 (fn [exception] (deliver p (str "exception message is: " (.getMessage exception)))))
     @p))
 
