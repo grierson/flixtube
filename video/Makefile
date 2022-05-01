@@ -1,16 +1,16 @@
 .PHONY: run test docker-build docker-run docker-stop
 
 run:
-	clojure -M -m catalog.main
+	clojure -M -m video.main
 
 test:
 	clojure -X:test
 
 docker-build:
-	docker build . -t grierson/catalog
+	docker build . -t grierson/video
 
 docker-run:
-	 docker run -d -p 3000:3000 --rm grierson/catalog
+	 docker run -d -p 3000:3000 grierson/video
 
 docker-stop:
 	docker stop cart

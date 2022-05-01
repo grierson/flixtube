@@ -10,3 +10,7 @@ cart:
 catalog:
 	echo "start catalog";
 	cd catalog/ && make run
+
+video:
+	echo "start video";
+	cd video/ && make run

@@ -73,4 +73,6 @@
 
   (do
     (stop)
-    (start)),)
+    (start))
+
+  (+ 1 1))

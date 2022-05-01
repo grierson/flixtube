@@ -6,9 +6,8 @@
 
 (defn next-seq-number [db]
   (if-some [last-event (last @db)]
-    (inc (:sequenceNumber (last @db)))
+    (inc (:sequenceNumber last-event))
     1))
-
 
 (defn raise [db event content]
   (let [seq-number (next-seq-number db)]
