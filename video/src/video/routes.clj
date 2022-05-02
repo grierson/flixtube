@@ -1,12 +1,20 @@
 (ns video.routes
   (:require
+    [aero.core :as aero]
     [reitit.ring :as ring]
     [reitit.coercion.malli :as mcoercion]
     [reitit.ring.coercion :as rrc]
     [reitit.ring.middleware.parameters :as parameters]
     [reitit.ring.middleware.muuntaja :as muuntaja]
     [muuntaja.core :as m]
-    [clojure.java.io :as io]))
+    [clojure.java.io :as io])
+  (:import (com.azure.storage.blob BlobClientBuilder)
+           (java.io ByteArrayOutputStream)))
+
+
+(def connection-string "")
+(def container "videos")
+(def blob "bunny_video.mp4")
 
 (defn app []
   (ring/ring-handler
@@ -15,10 +23,18 @@
                               {:status 200
                                :body   "hello"})}}]
        ["/video" {:get {:handler (fn [_]
-                                   (let [video (io/resource "bunny_video.mp4")]
+                                   (let [client (-> (BlobClientBuilder.)
+                                                    (.connectionString connection-string)
+                                                    (.containerName container)
+                                                    (.blobName blob)
+                                                    (.buildClient))
+                                         properties (.getProperties client)
+                                         contentType (.getContentType properties)
+                                         stream (ByteArrayOutputStream.)
+                                         _ (.downloadStream client stream)]
                                      {:status  200
-                                      :headers {"Content-Type" "video/mp4"}
-                                      :body    (io/input-stream video)}))}}]]
+                                      :headers {"Content-Type" contentType}
+                                      :body    (io/input-stream (.toByteArray stream))}))}}]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance
               :middleware [parameters/parameters-middleware
@@ -32,7 +48,7 @@
   (do
     (require
       '[juxt.clip.repl :refer [start stop set-init! system]])
-    (def system-config (clojure.edn/read-string (slurp (io/resource "config.edn"))))
+    (def system-config (aero/read-config (io/resource "config.edn")))
     (set-init! (constantly system-config))
     (start))
 

@@ -1,7 +1,16 @@
-.PHONY: all cart catalog
+.PHONY: all up down reload cart catalog video
 
 all:
 	echo "all"
+
+up:
+	docker-compose up --build
+
+down:
+	docker-compose down
+
+reload:
+	docker-compose down && docker-compose up --build
 
 cart:
 	echo "start cart";
