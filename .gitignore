@@ -1,4 +1,4 @@
 .nrepl-port
-b*.iml
+*.iml
 .cpcache/
 .idea/
