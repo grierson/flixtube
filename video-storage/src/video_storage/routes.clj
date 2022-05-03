@@ -1,4 +1,4 @@
-(ns video.routes
+(ns video-storage.routes
   (:require
     [aero.core :as aero]
     [reitit.ring :as ring]
@@ -19,10 +19,7 @@
 (defn app []
   (ring/ring-handler
     (ring/router
-      [["/" {:get {:handler (fn [_]
-                              {:status 200
-                               :body   "hello"})}}]
-       ["/video" {:get {:handler (fn [_]
+      [["/video" {:get {:handler (fn [_]
                                    (let [client (-> (BlobClientBuilder.)
                                                     (.connectionString connection-string)
                                                     (.containerName container)
