@@ -1,4 +1,4 @@
-(ns video-storage.main
+(ns video_storage.main
   (:require
     [aero.core :as aero]
     [clojure.java.io :as io]

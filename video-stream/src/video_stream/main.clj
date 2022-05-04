@@ -1,4 +1,4 @@
-(ns video-stream.main
+(ns video_stream.main
   (:require
     [aero.core :as aero]
     [clojure.java.io :as io]

@@ -1,4 +1,4 @@
-(ns video-storage.routes
+(ns video_storage.routes
   (:require
     [aero.core :as aero]
     [reitit.ring :as ring]
@@ -12,7 +12,7 @@
            (java.io ByteArrayOutputStream)))
 
 
-(def connection-string "")
+(def connection-string (System/getenv "STORAGE_CONNECTION_STRING"))
 (def container "videos")
 (def blob "bunny_video.mp4")
 

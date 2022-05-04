@@ -1,5 +1,5 @@
 {:components
- {:router {:start (video-storage.routes/app)}
+ {:router {:start (video_storage.routes/app)}
   :http   {:start (ring.adapter.jetty/run-jetty
                     (clip/ref :router)
                     {:port  #long #or [#env PORT 4000]

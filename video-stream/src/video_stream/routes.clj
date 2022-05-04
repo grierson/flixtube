@@ -1,4 +1,4 @@
-(ns video-stream.routes
+(ns video_stream.routes
   (:require
     [aero.core :as aero]
     [reitit.ring :as ring]
@@ -14,11 +14,11 @@
   (ring/ring-handler
     (ring/router
       [["/video" {:get {:handler (fn [_]
-                                   (let [host "http://localhost:"
-                                         port 4000
-                                         response (client/get (str host port "/video"))]
+                                   (let [host (System/getenv "VIDEO_STORAGE_HOST")
+                                         port (System/getenv "VIDEO_STORAGE_PORT")
+                                         response (client/get (str host ":" port "/video"))]
                                      {:status  200
-                                      :headers {"Content-Type" contentType}
+                                      :headers {"Content-Type" "video/mp4"}
                                       :body    (io/input-stream (.toByteArray response))}))}}]]
       {:data {:coercion   mcoercion/coercion
               :muuntaja   m/instance

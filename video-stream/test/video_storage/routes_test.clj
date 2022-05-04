@@ -1,4 +1,4 @@
-(ns video-storage.routes-test
+(ns video_storage.routes-test
   (:require
     [clojure.test :refer :all]
     [video.routes :refer :all]
