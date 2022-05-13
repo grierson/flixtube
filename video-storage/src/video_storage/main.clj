@@ -5,6 +5,6 @@
     [juxt.clip.core :as clip])
   (:gen-class))
 
-(defn -main [& args]
+(defn -main [& _]
   (let [system-config (aero/read-config (io/resource "config.edn"))]
     (clip/start system-config)))

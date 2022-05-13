@@ -1,11 +1,11 @@
 (ns video-storage.routes-test
   (:require
-    [clojure.test :refer :all]
-    [video.routes :refer :all]
+    [clojure.test :refer [deftest testing is]]
+    [video.routes :as routes]
     [ring.mock.request :refer [request]]))
 
 (deftest get-products-test
-  (let [sut (app)]
+  (let [sut (routes/app)]
     (testing "GET"
       (is (= (sut (request :get ""))
              {:status 200
