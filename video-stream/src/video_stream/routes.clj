@@ -17,8 +17,9 @@
     [["/video" {:get {:handler (fn [_]
                                  (let [host (System/getenv "VIDEO_STORAGE_HOST")
                                        port (System/getenv "VIDEO_STORAGE_PORT")
+                                       query "?path=bunny_video.mp4"
                                        response (client/get
-                                                 (str "http://" host ":" port "/video")
+                                                 (str "http://" host ":" port "/video" query)
                                                  {:as :stream})]
                                    {:status  200
                                     :headers {"Content-Type" "video/mp4"}

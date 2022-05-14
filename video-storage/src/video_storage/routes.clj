@@ -18,11 +18,12 @@
 (defn app []
   (ring/ring-handler
    (ring/router
-    [["/video" {:get {:handler (fn [_]
+    [["/video" {:get {:parameters {:query {:path string?}}
+                      :handler (fn [{{{:keys [path]} :query} :parameters}]
                                  (let [client (-> (BlobClientBuilder.)
                                                   (.connectionString connection-string)
                                                   (.containerName container)
-                                                  (.blobName blob)
+                                                  (.blobName path)
                                                   (.buildClient))
                                        properties (.getProperties client)
                                        contentType (.getContentType properties)
