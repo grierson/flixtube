@@ -18,40 +18,13 @@
 (def VIDEO-STORAGE-PORT (System/getenv "VIDEO_STORAGE_PORT"))
 
 (def DB-HOST (System/getenv "DB_HOST"))
-(def DB-PORT (Integer/parseInt (System/getenv "DB_PORT")))
-(def DB-NAME (System/getenv "DB_NAME"))
-
-;; (def DB-HOST "localhost")
-;; (def DB-PORT (Integer/parseInt "4000"))
-;; (def DB-NAME "video-streaming")
-
 (def DB-COLLECTION "videos")
 
 (defn get-video [id]
-  (let [_ (log/debug ">>> START DATA")
-        _ (log/debug id)
-        _ (log/debug DB-HOST)
-        _ (log/debug DB-PORT)
-        _ (log/debug ">>> END DATA")
-        conn (mg/connect)
-        _ (log/debug ">>>> START Connection")
-        _ (log/debug conn)
-        _ (log/debug ">>>> END Connection")
-        _ (log/debug ">>>> START Get Db")
-        db (mg/get-db conn DB-NAME)
-        _ (log/debug db)
-        _ (log/debug ">>>> END Get Db")
-        _ (log/debug ">>>> START Get Id")
+  (let [{:keys [db]} (mg/connect-via-uri DB-HOST)
         video-id (ObjectId. id)
-        _ (log/debug video-id)
-        _ (log/debug ">>>> END Get Id")
-        _ (log/debug ">>>> START Video")
-        video (mc/find-one-as-map db DB-COLLECTION {:_id video-id})
-        _ (log/debug video)
-        _ (log/debug ">>>> End Video")]
+        video (mc/find-one-as-map db DB-COLLECTION {:_id video-id})]
     video))
-
-;; (get-video "5d9e690ad76fe06a3d7ae416")
 
 (defn app []
   (ring/ring-handler

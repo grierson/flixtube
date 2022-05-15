@@ -30,7 +30,5 @@ services:
       - PORT=80
       - VIDEO_STORAGE_HOST=video-storage
       - VIDEO_STORAGE_PORT=80
-      - DB_HOST=mongodb
-      - DB_PORT=27017
-      - DB_NAME=video-streaming
+      - DB_HOST=mongodb://db:27017/video-streaming
     restart: "no"
