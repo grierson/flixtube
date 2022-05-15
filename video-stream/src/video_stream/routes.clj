@@ -1,18 +1,17 @@
 (ns video_stream.routes
   (:require
-   [aero.core :as aero]
-   [reitit.ring :as ring]
-   [reitit.coercion.malli :as mcoercion]
-   [reitit.ring.coercion :as rrc]
-   [reitit.ring.middleware.parameters :as parameters]
-   [reitit.ring.middleware.muuntaja :as muuntaja]
-   [muuntaja.core :as m]
-   [clj-http.client :as client]
-   [monger.core :as mg]
-   [monger.collection :as mc]
-   [taoensso.timbre :as log]
-   [clojure.java.io :as io])
-  (:import org.bson.types.ObjectId))
+    [aero.core :as aero]
+    [reitit.ring :as ring]
+    [reitit.coercion.malli :as mcoercion]
+    [reitit.ring.coercion :as rrc]
+    [reitit.ring.middleware.parameters :as parameters]
+    [reitit.ring.middleware.muuntaja :as muuntaja]
+    [muuntaja.core :as m]
+    [clj-http.client :as client]
+    [monger.core :as mg]
+    [monger.collection :as mc]
+    [clojure.java.io :as io])
+  (:import (org.bson.types ObjectId)))
 
 (def VIDEO-STORAGE-HOST (System/getenv "VIDEO_STORAGE_HOST"))
 (def VIDEO-STORAGE-PORT (System/getenv "VIDEO_STORAGE_PORT"))
@@ -29,15 +28,15 @@
 (defn app []
   (ring/ring-handler
    (ring/router
-    [["/video" {:get {:parameters {:query {:id string?}}
-                      :handler (fn [{{{:keys [id]} :query} :parameters}]
-                                 (let [video (get-video "5d9e690ad76fe06a3d7ae416")
-                                       video-path (:videoPath video)
-                                       url (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path=" video-path)
-                                       response (client/get url {:as :stream})]
-                                   {:status  200
-                                    :headers {"Content-Type" "video/mp4"}
-                                    :body    (io/input-stream (:body response))}))}}]
+     [["/video" {:get {:parameters {:query {:id string?}}
+                       :handler    (fn [{{{:keys [id]} :query} :parameters}]
+                                     (let [video (get-video "5d9e690ad76fe06a3d7ae416")
+                                           video-path (:videoPath video)
+                                           url (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path=" video-path)
+                                           response (client/get url {:as :stream})]
+                                       {:status  200
+                                        :headers {"Content-Type" "video/mp4"}
+                                        :body    (io/input-stream (:body response))}))}}]]
      {:data       {:coercion mcoercion/coercion}
       :muuntaja   m/instance
       :middleware [parameters/parameters-middleware
@@ -45,7 +44,7 @@
                    muuntaja/format-request-middleware
                    muuntaja/format-response-middleware
                    rrc/coerce-request-middleware
-                   rrc/coerce-response-middleware]}])))
+                   rrc/coerce-response-middleware]})))
 
 (comment
   (do
