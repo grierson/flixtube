@@ -1,16 +1,16 @@
 .PHONY: run test docker-build docker-run docker-stop
 
 run:
-	clojure -M -m video_storage.main
+	clojure -M -m history.main
 
 test:
 	clojure -X:test
 
 docker-build:
-	docker build . -t grierson/video-storage
+	docker build . -t grierson/history
 
 docker-run:
-	 docker run -d -p 3000:3000 grierson/video-storage
+	 docker run -d -p 3000:3000 grierson/history
 
 docker-stop:
-	docker stop cart
+	docker stop history

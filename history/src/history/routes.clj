@@ -7,22 +7,37 @@
     [reitit.ring.coercion :as rrc]
     [reitit.ring.middleware.parameters :as parameters]
     [reitit.ring.middleware.muuntaja :as muuntaja]
-    [muuntaja.core :as m]))
+    [muuntaja.core :as m]
+    [langohr.core :as rmq]
+    [langohr.core :as rmq]
+    [langohr.channel :as lch]
+    [langohr.consumers :as lc]
+    [langohr.queue :as lq]))
+
+(defn message-handler
+  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (println (format "[consumer] Received a message: %s, delivery tag: %d, content type: %s, type: %s"
+                   (String. payload "UTF-8") delivery-tag content-type type)))
 
 (defn app []
-  (ring/ring-handler
-   (ring/router
-    [["/health" {:get {:handler (fn [_]
-                                  {:status  200
-                                   :body    "world"})}}]]
-    {:data       {:coercion mcoercion/coercion}
-     :muuntaja   m/instance
-     :middleware [parameters/parameters-middleware
-                  muuntaja/format-negotiate-middleware
-                  muuntaja/format-request-middleware
-                  muuntaja/format-response-middleware
-                  rrc/coerce-request-middleware
-                  rrc/coerce-response-middleware]})))
+  (let [conn (rmq/connect)
+        channel (lch/open conn)
+        queue "langohr.examples.hello-world"
+        _ (lq/declare channel queue {:exclusive false :auto-delete true})
+        _ (lc/subscribe channel queue message-handler)]
+    (ring/ring-handler
+      (ring/router
+        [["/health" {:get {:handler (fn [_]
+                                      {:status 200}
+                                      :body "world")}}]]
+        {:data       {:coercion mcoercion/coercion}
+         :muuntaja   m/instance
+         :middleware [parameters/parameters-middleware
+                      muuntaja/format-negotiate-middleware
+                      muuntaja/format-request-middleware
+                      muuntaja/format-response-middleware
+                      rrc/coerce-request-middleware
+                      rrc/coerce-response-middleware]}))))
 
 (comment
   (do
