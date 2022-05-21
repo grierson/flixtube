@@ -23,6 +23,11 @@
 (def DB-COLLECTION "videos")
 (def exchange "")
 
+;(let [conn (rmq/connect)
+;      channel (lch/open conn)
+;      queue "langohr.examples.hello-world"
+;      _ (lq/declare channel queue {:exclusive false :auto-delete true})]
+
 (defn get-video [id]
   (let [{:keys [db]} (mg/connect-via-uri DB-HOST)
         video-id (ObjectId. id)
@@ -30,30 +35,26 @@
     video))
 
 (defn app []
-  (let [conn (rmq/connect)
-        channel (lch/open conn)
-        queue "langohr.examples.hello-world"
-        _ (lq/declare channel queue {:exclusive false :auto-delete true})]
-    (ring/ring-handler
-      (ring/router
-        [["/video" {:get {:parameters {:query {:id string?}}
-                          :handler    (fn [{{{:keys [id]} :query} :parameters}]
-                                        (let [video (get-video "5d9e690ad76fe06a3d7ae416")
-                                              video-path (:videoPath video)
-                                              url (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path=" video-path)
-                                              response (client/get url {:as :stream})]
-                                          (lb/publish channel exchange queue "Hello!" {:content-type "text/plain"})
+  (ring/ring-handler
+    (ring/router
+      [["/video" {:get {:parameters {:query {:id string?}}
+                        :handler    (fn [{{{:keys [id]} :query} :parameters}]
+                                      (let [video (get-video "5d9e690ad76fe06a3d7ae416")
+                                            video-path (:videoPath video)
+                                            url (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path=" video-path)
+                                            response (client/get url {:as :stream})]
+                                        (do
                                           {:status  200
                                            :headers {"Content-Type" "video/mp4"}
-                                           :body    (io/input-stream (:body response))}))}}]]
-        {:data       {:coercion mcoercion/coercion}
-         :muuntaja   m/instance
-         :middleware [parameters/parameters-middleware
-                      muuntaja/format-negotiate-middleware
-                      muuntaja/format-request-middleware
-                      muuntaja/format-response-middleware
-                      rrc/coerce-request-middleware
-                      rrc/coerce-response-middleware]}))))
+                                           :body    (io/input-stream (:body response))})))}}]]
+      {:data       {:coercion mcoercion/coercion}
+       :muuntaja   m/instance
+       :middleware [parameters/parameters-middleware
+                    muuntaja/format-negotiate-middleware
+                    muuntaja/format-request-middleware
+                    muuntaja/format-response-middleware
+                    rrc/coerce-request-middleware
+                    rrc/coerce-response-middleware]})))
 
 (comment
   (do

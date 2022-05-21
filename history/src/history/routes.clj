@@ -7,17 +7,29 @@
     [reitit.ring.coercion :as rrc]
     [reitit.ring.middleware.parameters :as parameters]
     [reitit.ring.middleware.muuntaja :as muuntaja]
-    [muuntaja.core :as m]
-    [langohr.core :as rmq]
-    [langohr.core :as rmq]
-    [langohr.channel :as lch]
-    [langohr.consumers :as lc]
-    [langohr.queue :as lq]))
+    [muuntaja.core :as m])
+  (:import (com.rabbitmq.client ConnectionFactory DeliverCallback CancelCallback)))
 
-(defn message-handler
-  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
-  (println (format "[consumer] Received a message: %s, delivery tag: %d, content type: %s, type: %s"
-                   (String. payload "UTF-8") delivery-tag content-type type)))
+
+(def queue "hello-world")
+(def conn (.newConnection (ConnectionFactory.)))
+(def channel (.createChannel conn))
+(.queueDeclare channel queue false false false nil)
+(.basicPublish channel "" queue nil (.getBytes "world"))
+
+(def cbfn
+  (reify DeliverCallback
+    (handle [_ tag delivery]
+      (do
+        (prn "call back consumer")
+        (prn (String. (.getBody delivery)))))))
+
+(def ecbfn
+  (reify CancelCallback
+    (handle [_ error]
+      (prn error))))
+
+(.basicConsume channel queue cbfn ecbfn)
 
 (defn app []
   (let [conn (rmq/connect)
