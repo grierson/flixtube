@@ -1,6 +1,8 @@
 {:paths   ["src" "resources"]
 
  :deps    {ring/ring                {:mvn/version "1.9.5"}
+           nrepl/nrepl              {:mvn/version "0.7.0"}
+           cider/cider-nrepl        {:mvn/version "0.25.2"}
            aero/aero                {:mvn/version "1.1.6"}
            juxt/clip                {:mvn/version "0.27.0"}
            metosin/reitit           {:mvn/version "0.5.17"}

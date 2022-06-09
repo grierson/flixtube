@@ -2,3 +2,6 @@
 *.iml
 .cpcache/
 .idea/
+
+history/.clj-kondo
+history/.lsp/.cache
