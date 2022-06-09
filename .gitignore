@@ -5,3 +5,5 @@
 
 history/.clj-kondo
 history/.lsp/.cache
+video-stream/.clj-kondo
+video-stream/.lsp/.cache
