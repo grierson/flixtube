@@ -13,7 +13,6 @@
 
 (def connection-string (System/getenv "STORAGE_CONNECTION_STRING"))
 (def container "videos")
-(def blob "bunny_video.mp4")
 
 (defn app []
   (ring/ring-handler
@@ -44,7 +43,7 @@
 (comment
   (do
     (require
-     '[juxt.clip.repl :refer [start stop set-init! system]])
+     '[juxt.clip.repl :refer [start stop set-init!]])
     (def system-config (aero/read-config (io/resource "config.edn")))
     (set-init! (constantly system-config))
     (start))
