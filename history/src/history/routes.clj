@@ -29,10 +29,11 @@
       (prn error))))
 
 (comment
-  (let [queue "hello-world"
-        channel (connect queue)]
-    (.basicPublish channel "" queue nil (.getBytes "world"))
-    (.basicConsume channel queue cbfn ecbfn)))
+  (def queue "hello-world")
+  (def channel (connect queue))
+
+  (.basicPublish channel "" queue nil (.getBytes "this"))
+  (.basicConsume channel queue cbfn ecbfn))
 
 (defn app []
   (let [conn (connect "hello-world")]
