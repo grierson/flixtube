@@ -3,21 +3,38 @@ services:
   db:
     image: mongo:latest
     container_name: db
+    restart: always
     ports:
       - "4000:27017"
-    restart: always
+
+  rabbit:
+    image: rabbitmq:3.8.1-management
+    container_name: rabbit
+    restart: "no"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - "5672"
+      - "15672"
+
   azure-storage:
     image: azure-storage
     build:
       context: ./video-storage
       dockerfile: Dockerfile
     container_name: video-storage
+    restart: "no"
     ports:
       - "4001:80"
     environment:
       - PORT=80
       - STORAGE_CONNECTION_STRING=?conn-str?
-    restart: "no"
 
   video-streaming:
     image: video-streaming
@@ -43,7 +60,7 @@ services:
       context: ./history
       dockerfile: Dockerfile
     container_name: history
-    restart: on-failure
+    restart: always
     ports:
       - "4003:80"
     environment:
@@ -51,21 +68,4 @@ services:
       - NODE_ENV=development
       - RABBIT=amqp://guest:guest@rabbit:5672
     depends_on:
-      - db
       - rabbit
-
-  rabbit:
-    image: rabbitmq:3.8.1-management
-    container_name: rabbit
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
-      interval: 5s
-      timeout: 15s
-      retries: 1
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    expose:
-      - "5672"
-      - "15672"
-    restart: always
