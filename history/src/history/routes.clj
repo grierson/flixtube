@@ -36,9 +36,9 @@
   (.basicConsume channel queue cbfn ecbfn))
 
 (defn app []
-  (let [queue "hello-world"]
-        ; channel (connect queue)
-        ; _ (.basicConsume channel queue cbfn ecbfn)]
+  (let [queue "hello-world"
+        channel (connect queue)
+        _ (.basicConsume channel queue cbfn ecbfn)]
     (ring/ring-handler
      (ring/router
       [["/health" {:get {:handler (fn [_]

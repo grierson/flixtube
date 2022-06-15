@@ -11,12 +11,19 @@
    [monger.core :as mg]
    [monger.collection :as mc]
    [clojure.java.io :as io])
-  (:import (org.bson.types ObjectId)))
+  (:import (org.bson.types ObjectId)
+           (com.rabbitmq.client ConnectionFactory)))
 
 (def VIDEO-STORAGE-HOST (System/getenv "VIDEO_STORAGE_HOST"))
 (def VIDEO-STORAGE-PORT (System/getenv "VIDEO_STORAGE_PORT"))
 (def DB-HOST (System/getenv "DB_HOST"))
 (def DB-COLLECTION "videos")
+
+(defn connect [queue]
+  (let [conn (.newConnection (ConnectionFactory.))
+        channel (.createChannel conn)
+        _  (.queueDeclare channel queue false false false nil)]
+    channel))
 
 (defn get-video [id]
   (let [{:keys [db]} (mg/connect-via-uri DB-HOST)
@@ -25,25 +32,30 @@
     {:videoPath "bunny_video.mp4"}))
 
 (defn app []
-  (ring/ring-handler
-   (ring/router
-    [["/video" {:get {:parameters {:query {:id string?}}
-                      :handler    (fn [{{{:keys [id]} :query} :parameters}]
-                                    (let [video (get-video id)
-                                          video-path (:videoPath video)
-                                          url (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path=" video-path)
-                                          response (client/get url {:as :stream})]
-                                      {:status  200
-                                       :headers {"Content-Type" "video/mp4"}
-                                       :body    (io/input-stream (:body response))}))}}]]
-    {:data       {:coercion mcoercion/coercion}
-     :muuntaja   m/instance
-     :middleware [parameters/parameters-middleware
-                  muuntaja/format-negotiate-middleware
-                  muuntaja/format-request-middleware
-                  muuntaja/format-response-middleware
-                  rrc/coerce-request-middleware
-                  rrc/coerce-response-middleware]})))
+  (let [queue "hello-world"
+        channel (connect queue)]
+    (ring/ring-handler
+     (ring/router
+      [["/video" {:get
+                  {:parameters {:query {:id string?}}
+                   :handler    (fn [{{{:keys [id]} :query} :parameters}]
+                                 (let [video (get-video id)
+                                       video-path (:videoPath video)
+                                       url (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path=" video-path)
+                                       response (client/get url {:as :stream})]
+                                   (do
+                                     (.basicPublish channel "" queue nil (.getBytes video-path))
+                                     {:status  200
+                                      :headers {"Content-Type" "video/mp4"}
+                                      :body    (io/input-stream (:body response))})))}}]]
+      {:data       {:coercion mcoercion/coercion}
+       :muuntaja   m/instance
+       :middleware [parameters/parameters-middleware
+                    muuntaja/format-negotiate-middleware
+                    muuntaja/format-request-middleware
+                    muuntaja/format-response-middleware
+                    rrc/coerce-request-middleware
+                    rrc/coerce-response-middleware]}))))
 
 (comment
   (do
