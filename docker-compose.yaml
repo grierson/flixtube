@@ -11,17 +11,12 @@ services:
     image: rabbitmq:3.8.1-management
     container_name: rabbit
     restart: "no"
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
-      interval: 5s
-      timeout: 15s
-      retries: 1
     ports:
       - "5672:5672"
       - "15672:15672"
     expose:
-      - "5672"
-      - "15672"
+      - 5672
+      - 15672
 
   azure-storage:
     image: azure-storage
@@ -60,7 +55,7 @@ services:
       context: ./history
       dockerfile: Dockerfile
     container_name: history
-    restart: always
+    restart: on-failure
     ports:
       - "4003:80"
     environment:

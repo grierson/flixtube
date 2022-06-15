@@ -2,6 +2,6 @@
  {:router {:start (history.routes/app)}
   :http   {:start (ring.adapter.jetty/run-jetty
                     (clip/ref :router)
-                    {:port  #long #or [#env PORT 4123]
+                    {:port  #long #or [#env PORT 4000]
                      :join? false})
            :stop  (.stop this)}}}
