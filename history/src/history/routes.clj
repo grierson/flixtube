@@ -13,12 +13,18 @@
 (defn connect [queue]
   (try
     (let [_ (prn "Before new connection")
-          conn (.newConnection (ConnectionFactory.))
-          _ (prn "Created conniction")
-          channel (.createChannel conn)
-          _ (prn "Create channel")
+          factory (ConnectionFactory.)
+          _ (prn "Before set host")
+          new-factory (.setHost factory "rabbit")
+          _ (prn new-factory)
+          _ (prn factory)
+          _ (prn "Before new connection")
+          connection (.newConnection factory)
+          _ (prn "Before created channel")
+          channel (.createChannel connection)
+          _ (prn "Before declare queue")
           _  (.queueDeclare channel queue false false false nil)
-          _ (prn "Declare queue")]
+          _ (prn "Connection complete")]
       channel)
     (catch Exception e
       (prn "Failed to connect to rabbit")
