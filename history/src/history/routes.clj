@@ -11,10 +11,18 @@
   (:import (com.rabbitmq.client ConnectionFactory DeliverCallback CancelCallback)))
 
 (defn connect [queue]
-  (let [conn (.newConnection (ConnectionFactory.))
-        channel (.createChannel conn)
-        _  (.queueDeclare channel queue false false false nil)]
-    channel))
+  (try
+    (let [_ (prn "Before new connection")
+          conn (.newConnection (ConnectionFactory.))
+          _ (prn "Created conniction")
+          channel (.createChannel conn)
+          _ (prn "Create channel")
+          _  (.queueDeclare channel queue false false false nil)
+          _ (prn "Declare queue")]
+      channel)
+    (catch Exception e
+      (prn "Failed to connect to rabbit")
+      (prn e))))
 
 (def cbfn
   (reify DeliverCallback
@@ -28,6 +36,16 @@
     (handle [_ error]
       (prn error))))
 
+(defn consume [channel queue]
+  (do
+    (prn "try consume")
+    (prn "channel" channel)
+    (try
+      (.basicConsume channel queue cbfn ecbfn)
+      (catch Exception e
+        (prn "Error consume from channel")
+        (prn e)))))
+
 (comment
   (def queue "hello-world")
   (def channel (connect queue))
@@ -38,7 +56,7 @@
 (defn app []
   (let [queue "hello-world"
         channel (connect queue)
-        _ (.basicConsume channel queue cbfn ecbfn)]
+        _ (consume channel queue)]
     (ring/ring-handler
      (ring/router
       [["/health" {:get {:handler (fn [_]
