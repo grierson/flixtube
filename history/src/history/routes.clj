@@ -60,12 +60,17 @@
   (.basicConsume channel queue cbfn ecbfn))
 
 (defn app []
-  (let [queue "hello-world"
-        channel (connect queue)
-        _ (consume channel queue)]
+  (let [queue "hello-world"]
+        ; channel (connect queue)
+        ; _ (consume channel queue)]
     (ring/ring-handler
      (ring/router
-      [["/health" {:get {:handler (fn [_]
+      [["/viewed" {:post {:handler (fn [_]
+                                     (do
+                                       (prn "Something viewed")
+                                       {:status 200
+                                        :body "viewed"}))}}]
+       ["/health" {:get {:handler (fn [_]
                                     {:status 200
                                      :body "world"})}}]]
       {:data       {:coercion mcoercion/coercion}

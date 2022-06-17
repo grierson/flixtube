@@ -10,20 +10,38 @@
    [clj-http.client :as client]
    [monger.core :as mg]
    [monger.collection :as mc]
-   [clojure.java.io :as io])
+   [clojure.java.io :as io]
+   [jsonista.core :as json])
   (:import (org.bson.types ObjectId)
            (com.rabbitmq.client ConnectionFactory)))
 
+(def HISORY-HOST (System/getenv "HISTORY_HOST"))
+(def HISORY-PORT (System/getenv "HISTORY_PORT"))
 (def VIDEO-STORAGE-HOST (System/getenv "VIDEO_STORAGE_HOST"))
 (def VIDEO-STORAGE-PORT (System/getenv "VIDEO_STORAGE_PORT"))
 (def DB-HOST (System/getenv "DB_HOST"))
 (def DB-COLLECTION "videos")
+(def VIDEO-STORAGE-URL (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path="))
 
 (defn connect [queue]
-  (let [conn (.newConnection (ConnectionFactory.))
-        channel (.createChannel conn)
-        _  (.queueDeclare channel queue false false false nil)]
-    channel))
+  (try
+    (let [_ (prn "Before new connection")
+          factory (ConnectionFactory.)
+          _ (prn "Before set host")
+          new-factory (.setHost factory "rabbit")
+          _ (prn new-factory)
+          _ (prn factory)
+          _ (prn "Before new connection")
+          connection (.newConnection factory)
+          _ (prn "Before created channel")
+          channel (.createChannel connection)
+          _ (prn "Before declare queue")
+          _  (.queueDeclare channel queue false false false nil)
+          _ (prn "Connection complete")]
+      channel)
+    (catch Exception e
+      (prn "Failed to connect to rabbit")
+      (prn e))))
 
 (defn get-video [id]
   (let [{:keys [db]} (mg/connect-via-uri DB-HOST)
@@ -31,23 +49,30 @@
         _video (mc/find-one-as-map db DB-COLLECTION {:_id video-id})]
     {:videoPath "bunny_video.mp4"}))
 
+(defn sendVideoMessage [path]
+  ; (.basicPublish channel "" queue nil (.getBytes video-path))
+  (client/post
+   (str "http://" HISORY-HOST ":" HISORY-PORT "/viewed?video=" path)
+   {}))
+
 (defn app []
-  (let [queue "hello-world"
-        channel (connect queue)]
+  (let [queue "hello-world"]
+        ; channel (connect queue)]
     (ring/ring-handler
      (ring/router
-      [["/video" {:get
-                  {:parameters {:query {:id string?}}
-                   :handler    (fn [{{{:keys [id]} :query} :parameters}]
-                                 (let [video (get-video id)
-                                       video-path (:videoPath video)
-                                       url (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path=" video-path)
-                                       response (client/get url {:as :stream})]
-                                   (do
-                                     (.basicPublish channel "" queue nil (.getBytes video-path))
-                                     {:status  200
-                                      :headers {"Content-Type" "video/mp4"}
-                                      :body    (io/input-stream (:body response))})))}}]]
+      [["/video"
+        {:get
+         {:parameters {:query {:id string?}}
+          :handler
+          (fn [{{{:keys [_]} :query} :parameters}]
+            (let [video-path "bunny_video.mp4"
+                  url (str VIDEO-STORAGE-URL video-path)
+                  response (client/get url {:as :stream})]
+              (do
+                (sendVideoMessage video-path)
+                {:status  200
+                 :headers {"Content-Type" "video/mp4"}
+                 :body    (io/input-stream (:body response))})))}}]]
       {:data       {:coercion mcoercion/coercion}
        :muuntaja   m/instance
        :middleware [parameters/parameters-middleware
