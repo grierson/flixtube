@@ -10,8 +10,7 @@
    [clj-http.client :as client]
    [monger.core :as mg]
    [monger.collection :as mc]
-   [clojure.java.io :as io]
-   [jsonista.core :as json])
+   [clojure.java.io :as io])
   (:import (org.bson.types ObjectId)
            (com.rabbitmq.client ConnectionFactory)))
 
@@ -24,21 +23,13 @@
 (def VIDEO-STORAGE-URL (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path="))
 (def RABBIT_URI (System/getenv "RABBIT"))
 
-(defn connect [queue]
+(defn connect [exchange]
   (try
-    (let [_ (prn "Before new connection")
-          factory (ConnectionFactory.)
-          _ (prn "Before set host")
-          new-factory (.setUri factory RABBIT_URI)
-          _ (prn new-factory)
-          _ (prn factory)
-          _ (prn "Before new connection")
+    (let [factory (ConnectionFactory.)
+          _ (.setUri factory RABBIT_URI)
           connection (.newConnection factory)
-          _ (prn "Before created channel")
           channel (.createChannel connection)
-          _ (prn "Before declare queue")
-          _  (.queueDeclare channel queue false false false nil)
-          _ (prn "Connection complete")]
+          _  (.exchangeDeclare channel exchange "fanout")]
       channel)
     (catch Exception e
       (prn "Failed to connect to rabbit")
@@ -55,12 +46,12 @@
    (client/post
     (str "http://" HISORY-HOST ":" HISORY-PORT "/viewed?video=" path)
     {}))
-  ([channel queue path]
-   (.basicPublish channel "" queue nil (.getBytes path))))
+  ([channel exchange path]
+   (.basicPublish channel exchange "" nil (.getBytes path))))
 
 (defn app []
-  (let [queue "hello-world"
-        channel (connect queue)]
+  (let [exchange "hello-world"
+        channel (connect exchange)]
     (ring/ring-handler
      (ring/router
       [["/video"
@@ -72,7 +63,7 @@
                   url (str VIDEO-STORAGE-URL video-path)
                   response (client/get url {:as :stream})]
               (do
-                (sendVideoMessage channel queue video-path)
+                (sendVideoMessage channel exchange video-path)
                 {:status  200
                  :headers {"Content-Type" "video/mp4"}
                  :body    (io/input-stream (:body response))})))}}]]

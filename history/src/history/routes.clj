@@ -12,22 +12,17 @@
 
 (def RABBIT_URI (System/getenv "RABBIT"))
 
-(defn connect [queue]
+(defn connect [exchange]
   (try
-    (let [_ (prn "Before new connection")
-          factory (ConnectionFactory.)
-          _ (prn "Before set host")
-          new-factory (.setUri factory RABBIT_URI)
-          _ (prn new-factory)
-          _ (prn factory)
-          _ (prn "Before new connection")
+    (let [factory (ConnectionFactory.)
+          _ (.setUri factory RABBIT_URI)
           connection (.newConnection factory)
-          _ (prn "Before created channel")
           channel (.createChannel connection)
-          _ (prn "Before declare queue")
-          _  (.queueDeclare channel queue false false false nil)
-          _ (prn "Connection complete")]
-      channel)
+          _  (.exchangeDeclare channel exchange "fanout")
+          queueName (.getQueue (.queueDeclare channel))
+          _ (.queueBind channel queueName exchange "")]
+      {:channel channel
+       :queueName queueName})
     (catch Exception e
       (prn "Failed to connect to rabbit")
       (prn e))))
@@ -49,7 +44,7 @@
     (prn "try consume")
     (prn "channel" channel)
     (try
-      (.basicConsume channel queue cbfn ecbfn)
+      (.basicConsume channel queue true cbfn ecbfn)
       (catch Exception e
         (prn "Error consume from channel")
         (prn e)))))
@@ -62,9 +57,9 @@
   (.basicConsume channel queue cbfn ecbfn))
 
 (defn app []
-  (let [queue "hello-world"
-        channel (connect queue)
-        _ (consume channel queue)]
+  (let [exchange "hello-world"
+        {:keys [channel queueName]} (connect exchange)
+        _ (consume channel queueName)]
     (ring/ring-handler
      (ring/router
       [["/viewed" {:post {:handler (fn [_]
