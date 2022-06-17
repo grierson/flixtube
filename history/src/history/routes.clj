@@ -10,12 +10,14 @@
    [muuntaja.core :as m])
   (:import (com.rabbitmq.client ConnectionFactory DeliverCallback CancelCallback)))
 
+(def RABBIT_URI (System/getenv "RABBIT"))
+
 (defn connect [queue]
   (try
     (let [_ (prn "Before new connection")
           factory (ConnectionFactory.)
           _ (prn "Before set host")
-          new-factory (.setHost factory "rabbit")
+          new-factory (.setUri factory RABBIT_URI)
           _ (prn new-factory)
           _ (prn factory)
           _ (prn "Before new connection")
@@ -60,9 +62,9 @@
   (.basicConsume channel queue cbfn ecbfn))
 
 (defn app []
-  (let [queue "hello-world"]
-        ; channel (connect queue)
-        ; _ (consume channel queue)]
+  (let [queue "hello-world"
+        channel (connect queue)
+        _ (consume channel queue)]
     (ring/ring-handler
      (ring/router
       [["/viewed" {:post {:handler (fn [_]

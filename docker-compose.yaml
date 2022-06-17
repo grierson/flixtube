@@ -29,6 +29,7 @@ services:
       - "4001:80"
     environment:
       - PORT=80
+      - STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=congo;AccountKey=89EPV4VNLqz/0khuVQr+6oYV/o+cjaoyBQu+4qPOfG3svjKO67jSU3Y9xt1DMn6Pf35mROQWtw6y4nXTE+3+VA==;EndpointSuffix=core.windows.net
 
   video-streaming:
     image: video-streaming
@@ -39,16 +40,17 @@ services:
     restart: on-failure
     ports:
       - "4002:80"
-    depends_on:
-      - rabbit
     environment:
       - PORT=80
       - HISTORY_HOST=history
       - HISTORY_PORT=80
+      - RABBIT=amqp://guest:guest@rabbit:5672
       - VIDEO_STORAGE_HOST=video-storage
       - VIDEO_STORAGE_PORT=80
       - DB_HOST=mongodb://db:27017/video-streaming
       - DBHOST=mongodb://db:27017
+    depends_on:
+      - rabbit
 
   history:
     image: history

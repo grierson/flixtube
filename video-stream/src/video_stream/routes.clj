@@ -22,13 +22,14 @@
 (def DB-HOST (System/getenv "DB_HOST"))
 (def DB-COLLECTION "videos")
 (def VIDEO-STORAGE-URL (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path="))
+(def RABBIT_URI (System/getenv "RABBIT"))
 
 (defn connect [queue]
   (try
     (let [_ (prn "Before new connection")
           factory (ConnectionFactory.)
           _ (prn "Before set host")
-          new-factory (.setHost factory "rabbit")
+          new-factory (.setUri factory RABBIT_URI)
           _ (prn new-factory)
           _ (prn factory)
           _ (prn "Before new connection")
@@ -49,15 +50,17 @@
         _video (mc/find-one-as-map db DB-COLLECTION {:_id video-id})]
     {:videoPath "bunny_video.mp4"}))
 
-(defn sendVideoMessage [path]
-  ; (.basicPublish channel "" queue nil (.getBytes video-path))
-  (client/post
-   (str "http://" HISORY-HOST ":" HISORY-PORT "/viewed?video=" path)
-   {}))
+(defn sendVideoMessage
+  ([path]
+   (client/post
+    (str "http://" HISORY-HOST ":" HISORY-PORT "/viewed?video=" path)
+    {}))
+  ([channel queue path]
+   (.basicPublish channel "" queue nil (.getBytes path))))
 
 (defn app []
-  (let [queue "hello-world"]
-        ; channel (connect queue)]
+  (let [queue "hello-world"
+        channel (connect queue)]
     (ring/ring-handler
      (ring/router
       [["/video"
@@ -69,7 +72,7 @@
                   url (str VIDEO-STORAGE-URL video-path)
                   response (client/get url {:as :stream})]
               (do
-                (sendVideoMessage video-path)
+                (sendVideoMessage channel queue video-path)
                 {:status  200
                  :headers {"Content-Type" "video/mp4"}
                  :body    (io/input-stream (:body response))})))}}]]
