@@ -3,9 +3,8 @@
 .cpcache/
 .idea/
 
-history/.clj-kondo
-history/.lsp/.cache
-video-stream/.clj-kondo
-video-stream/.lsp/.cache
-video-storage/.clj-kondo
-video-storage/.lsp/.cache
+.clj-kondo/
+.lsp/
+.terraform/
+*.tfstate
+*.tfstate.backup
