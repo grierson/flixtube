@@ -29,7 +29,7 @@ services:
       - "4001:80"
     environment:
       - PORT=80
-      - STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=congo;AccountKey=89EPV4VNLqz/0khuVQr+6oYV/o+cjaoyBQu+4qPOfG3svjKO67jSU3Y9xt1DMn6Pf35mROQWtw6y4nXTE+3+VA==;EndpointSuffix=core.windows.net
+      - STORAGE_CONNECTION_STRING=?conn-str?
 
   video-streaming:
     image: video-streaming
