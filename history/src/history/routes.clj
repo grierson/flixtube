@@ -8,7 +8,10 @@
    [reitit.ring.middleware.parameters :as parameters]
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [muuntaja.core :as m])
-  (:import (com.rabbitmq.client ConnectionFactory DeliverCallback CancelCallback)))
+  (:import (com.rabbitmq.client
+            ConnectionFactory
+            DeliverCallback
+            CancelCallback)))
 
 (def RABBIT_URI (System/getenv "RABBIT"))
 
