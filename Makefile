@@ -9,7 +9,7 @@ up:
 down:
 	docker-compose down
 
-reload:
+reboot:
 	docker-compose down && docker-compose up --build
 
 cart:

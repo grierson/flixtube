@@ -1,8 +1,10 @@
 # Flixtube
 
-Me playing round with microservices in clojure
+Bootstrapping microservices with docker and kubernetes and terraform in clj
 
-Create video
+## Setup
+
+* http://localhost:4001/video?path=bunny.mp4
 
 Create Database: video-streaming
 Create Collection: videos

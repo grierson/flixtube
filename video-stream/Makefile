@@ -13,4 +13,4 @@ docker-run:
 	 docker run -d -p 3000:3000 grierson/video-stream
 
 docker-stop:
-	docker stop cart
+	docker stop grierson/video-stream

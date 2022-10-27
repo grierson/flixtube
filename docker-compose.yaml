@@ -29,7 +29,7 @@ services:
       - "4001:80"
     environment:
       - PORT=80
-      - STORAGE_CONNECTION_STRING=?conn-str?
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING} 
 
   video-streaming:
     image: video-streaming
@@ -37,7 +37,7 @@ services:
       context: ./video-stream
       dockerfile: Dockerfile
     container_name: video-stream
-    restart: on-failure
+    restart: "no"
     ports:
       - "4002:80"
     environment:
@@ -58,7 +58,7 @@ services:
       context: ./history
       dockerfile: Dockerfile
     container_name: history
-    restart: on-failure
+    restart: "no"
     ports:
       - "4003:80"
     environment:

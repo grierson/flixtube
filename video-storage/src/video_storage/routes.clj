@@ -11,26 +11,32 @@
   (:import (com.azure.storage.blob BlobClientBuilder)
            (java.io ByteArrayOutputStream)))
 
-(def connection-string (System/getenv "STORAGE_CONNECTION_STRING"))
+(def connection-string (System/getenv "AZURE_STORAGE_CONNECTION_STRING"))
 (def container "videos")
 
 (defn app []
   (ring/ring-handler
    (ring/router
-    [["/video" {:get {:parameters {:query {:path string?}}
-                      :handler (fn [{{{:keys [path]} :query} :parameters}]
-                                 (let [client (-> (BlobClientBuilder.)
-                                                  (.connectionString connection-string)
-                                                  (.containerName container)
-                                                  (.blobName path)
-                                                  (.buildClient))
-                                       properties (.getProperties client)
-                                       contentType (.getContentType properties)
-                                       stream (ByteArrayOutputStream.)
-                                       _ (.downloadStream client stream)]
-                                   {:status  200
-                                    :headers {"Content-Type" contentType}
-                                    :body    (io/input-stream (.toByteArray stream))}))}}]]
+    [["/health" {:get {:handler (fn [_]
+                                  {:status 200
+                                   :body "healthy"})}}]
+     ["/video"
+      {:get
+       {:parameters {:query {:path string?}}
+        :handler (fn [{{{:keys [path]} :query} :parameters}]
+                   (prn connection-string)
+                   (let [client (-> (BlobClientBuilder.)
+                                    (.connectionString connection-string)
+                                    (.containerName container)
+                                    (.blobName path)
+                                    (.buildClient))
+                         properties (.getProperties client)
+                         contentType (.getContentType properties)
+                         stream (ByteArrayOutputStream.)
+                         _ (.downloadStream client stream)]
+                     {:status  200
+                      :headers {"Content-Type" contentType}
+                      :body    (io/input-stream (.toByteArray stream))}))}}]]
     {:data {:coercion   mcoercion/coercion
             :muuntaja   m/instance
             :middleware [parameters/parameters-middleware
