@@ -1,11 +1,10 @@
 version: '3'
 services:
-  db:
+  mongo:
     image: mongo:latest
-    container_name: db
-    restart: always
+    restart: "no"
     ports:
-      - "4000:27017"
+      - "27017:27017"
 
   rabbit:
     image: rabbitmq:3.8.1-management
@@ -47,10 +46,11 @@ services:
       - RABBIT=amqp://guest:guest@rabbit:5672
       - VIDEO_STORAGE_HOST=video-storage
       - VIDEO_STORAGE_PORT=80
-      - DB_HOST=mongodb://db:27017/video-streaming
-      - DBHOST=mongodb://db:27017
+      - DBHOST=${MONGO_URI}
+      - DBCOLLECTION=${DB_COLLECTION}
     depends_on:
       - rabbit
+      - mongo
 
   history:
     image: history

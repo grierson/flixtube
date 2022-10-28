@@ -18,8 +18,8 @@
 (def HISORY-PORT (System/getenv "HISTORY_PORT"))
 (def VIDEO-STORAGE-HOST (System/getenv "VIDEO_STORAGE_HOST"))
 (def VIDEO-STORAGE-PORT (System/getenv "VIDEO_STORAGE_PORT"))
-(def DB-HOST (System/getenv "DB_HOST"))
-(def DB-COLLECTION "videos")
+(def DB-HOST (System/getenv "DBHOST"))
+(def DB-COLLECTION (System/getenv "DBCOLLECTION"))
 (def VIDEO-STORAGE-URL (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path="))
 (def RABBIT_URI (System/getenv "RABBIT"))
 
@@ -36,10 +36,10 @@
       (prn e))))
 
 (defn get-video [id]
-  (let [{:keys [db]} (mg/connect-via-uri DB-HOST)
-        video-id (ObjectId. id)
-        _video (mc/find-one-as-map db DB-COLLECTION {:_id video-id})]
-    {:videoPath "bunny_video.mp4"}))
+  (let  [{:keys [db]} (mg/connect-via-uri DB-HOST)
+         video-id (ObjectId. id)
+         {:keys [videoPath]} (mc/find-one-as-map db DB-COLLECTION {:_id video-id})]
+    videoPath))
 
 (defn sendVideoMessage
   ([path]
@@ -54,27 +54,30 @@
         channel (connect exchange)]
     (ring/ring-handler
      (ring/router
-      [["/video"
+      [["/health" {:get {:handler (fn [_]
+                                    {:status 200
+                                     :body "healthy"})}}]
+       ["/video"
         {:get
          {:parameters {:query {:id string?}}
           :handler
-          (fn [{{{:keys [_]} :query} :parameters}]
-            (let [video-path "bunny_video.mp4"
-                  url (str VIDEO-STORAGE-URL video-path)
-                  response (client/get url {:as :stream})]
+          (fn [{{{:keys [id]} :query} :parameters}]
+            (let [video-path (get-video id)
+                  video-url (str VIDEO-STORAGE-URL video-path)
+                  response (client/get video-url {:as :stream})]
               (do
                 (sendVideoMessage channel exchange video-path)
                 {:status  200
                  :headers {"Content-Type" "video/mp4"}
                  :body    (io/input-stream (:body response))})))}}]]
-      {:data       {:coercion mcoercion/coercion}
-       :muuntaja   m/instance
-       :middleware [parameters/parameters-middleware
-                    muuntaja/format-negotiate-middleware
-                    muuntaja/format-request-middleware
-                    muuntaja/format-response-middleware
-                    rrc/coerce-request-middleware
-                    rrc/coerce-response-middleware]}))))
+      {:data       {:coercion mcoercion/coercion
+                    :muuntaja   m/instance
+                    :middleware [parameters/parameters-middleware
+                                 muuntaja/format-negotiate-middleware
+                                 muuntaja/format-request-middleware
+                                 muuntaja/format-response-middleware
+                                 rrc/coerce-request-middleware
+                                 rrc/coerce-response-middleware]}}))))
 
 (comment
   (do

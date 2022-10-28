@@ -23,20 +23,20 @@
      ["/video"
       {:get
        {:parameters {:query {:path string?}}
-        :handler (fn [{{{:keys [path]} :query} :parameters}]
-                   (prn connection-string)
-                   (let [client (-> (BlobClientBuilder.)
-                                    (.connectionString connection-string)
-                                    (.containerName container)
-                                    (.blobName path)
-                                    (.buildClient))
-                         properties (.getProperties client)
-                         contentType (.getContentType properties)
-                         stream (ByteArrayOutputStream.)
-                         _ (.downloadStream client stream)]
-                     {:status  200
-                      :headers {"Content-Type" contentType}
-                      :body    (io/input-stream (.toByteArray stream))}))}}]]
+        :handler
+        (fn [{{{:keys [path]} :query} :parameters}]
+          (let [client (-> (BlobClientBuilder.)
+                           (.connectionString connection-string)
+                           (.containerName container)
+                           (.blobName path)
+                           (.buildClient))
+                properties (.getProperties client)
+                contentType (.getContentType properties)
+                stream (ByteArrayOutputStream.)
+                _ (.downloadStream client stream)]
+            {:status  200
+             :headers {"Content-Type" contentType}
+             :body    (io/input-stream (.toByteArray stream))}))}}]]
     {:data {:coercion   mcoercion/coercion
             :muuntaja   m/instance
             :middleware [parameters/parameters-middleware

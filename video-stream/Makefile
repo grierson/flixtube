@@ -1,4 +1,7 @@
-.PHONY: run test docker-build docker-run docker-stop
+.PHONY: run repl test docker-build docker-run docker-stop
+
+repl:
+	clj -M:repl/conjure
 
 run:
 	clojure -M -m video_stream.main
