@@ -24,13 +24,13 @@
 (def RABBIT_URI (System/getenv "RABBIT"))
 (def VIEWED_EXCHANGE (System/getenv "VIEWED_EXCHANGE"))
 
-(defn connect [exchange]
+(defn create-channel []
   (try
     (let [factory (ConnectionFactory.)
           _ (.setUri factory RABBIT_URI)
           connection (.newConnection factory)
           channel (.createChannel connection)
-          _  (.exchangeDeclare channel exchange "fanout")]
+          _  (.exchangeDeclare channel VIEWED_EXCHANGE "fanout")]
       channel)
     (catch Exception e
       (prn "Failed to connect to rabbit")
@@ -42,17 +42,12 @@
          {:keys [videoPath]} (mc/find-one-as-map db DB-COLLECTION {:_id video-id})]
     videoPath))
 
-(defn sendVideoMessage
-  ([path]
-   (client/post
-    (str "http://" HISORY-HOST ":" HISORY-PORT "/viewed?video=" path)
-    {}))
-  ([channel exchange path]
-   (.basicPublish channel exchange "" nil (.getBytes path))))
+(defn viewed
+  [channel video-path]
+  (.basicPublish channel VIEWED_EXCHANGE "" nil (.getBytes video-path)))
 
 (defn app []
-  (let [exchange VIEWED_EXCHANGE
-        channel (connect exchange)]
+  (let [channel (create-channel)]
     (ring/ring-handler
      (ring/router
       [["/health" {:get {:handler (fn [_]
@@ -67,7 +62,7 @@
                   video-url (str VIDEO-STORAGE-URL video-path)
                   response (client/get video-url {:as :stream})]
               (do
-                (sendVideoMessage channel exchange video-path)
+                (viewed channel video-path)
                 {:status  200
                  :headers {"Content-Type" "video/mp4"}
                  :body    (io/input-stream (:body response))})))}}]]

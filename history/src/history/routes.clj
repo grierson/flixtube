@@ -1,13 +1,7 @@
 (ns history.routes
   (:require
    [aero.core :as aero]
-   [clojure.java.io :as io]
-   [reitit.ring :as ring]
-   [reitit.coercion.malli :as mcoercion]
-   [reitit.ring.coercion :as rrc]
-   [reitit.ring.middleware.parameters :as parameters]
-   [reitit.ring.middleware.muuntaja :as muuntaja]
-   [muuntaja.core :as m])
+   [clojure.java.io :as io])
   (:import (com.rabbitmq.client
             ConnectionFactory
             DeliverCallback
