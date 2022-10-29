@@ -14,6 +14,7 @@
             CancelCallback)))
 
 (def RABBIT_URI (System/getenv "RABBIT"))
+(def VIEWED_EXCHANGE (System/getenv "VIEWED_EXCHANGE"))
 
 (defn connect [exchange]
   (try
@@ -43,44 +44,15 @@
       (prn error))))
 
 (defn consume [channel queue]
-  (do
-    (prn "try consume")
-    (prn "channel" channel)
-    (try
-      (.basicConsume channel queue true cbfn ecbfn)
-      (catch Exception e
-        (prn "Error consume from channel")
-        (prn e)))))
-
-(comment
-  (def queue "hello-world")
-  (def channel (connect queue))
-
-  (.basicPublish channel "" queue nil (.getBytes "this"))
-  (.basicConsume channel queue cbfn ecbfn))
+  (try
+    (.basicConsume channel queue true cbfn ecbfn)
+    (catch Exception e
+      (prn "Error consume from channel")
+      (prn e))))
 
 (defn app []
-  (let [exchange "hello-world"
-        {:keys [channel queueName]} (connect exchange)
-        _ (consume channel queueName)]
-    (ring/ring-handler
-     (ring/router
-      [["/viewed" {:post {:handler (fn [_]
-                                     (do
-                                       (prn "Something viewed")
-                                       {:status 200
-                                        :body "viewed"}))}}]
-       ["/health" {:get {:handler (fn [_]
-                                    {:status 200
-                                     :body "world"})}}]]
-      {:data       {:coercion mcoercion/coercion}
-       :muuntaja   m/instance
-       :middleware [parameters/parameters-middleware
-                    muuntaja/format-negotiate-middleware
-                    muuntaja/format-request-middleware
-                    muuntaja/format-response-middleware
-                    rrc/coerce-request-middleware
-                    rrc/coerce-response-middleware]}))))
+  (let [{:keys [channel queueName]} (connect VIEWED_EXCHANGE)]
+    (consume channel queueName)))
 
 (comment
   (do

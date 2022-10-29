@@ -22,6 +22,7 @@
 (def DB-COLLECTION (System/getenv "DBCOLLECTION"))
 (def VIDEO-STORAGE-URL (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path="))
 (def RABBIT_URI (System/getenv "RABBIT"))
+(def VIEWED_EXCHANGE (System/getenv "VIEWED_EXCHANGE"))
 
 (defn connect [exchange]
   (try
@@ -50,7 +51,7 @@
    (.basicPublish channel exchange "" nil (.getBytes path))))
 
 (defn app []
-  (let [exchange "hello-world"
+  (let [exchange VIEWED_EXCHANGE
         channel (connect exchange)]
     (ring/ring-handler
      (ring/router
