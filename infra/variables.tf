@@ -1,5 +1,5 @@
 variable "name" {
-  default = "flixtube"
+  default = "griersonflixtube"
 }
 
 variable "location" {
