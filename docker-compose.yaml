@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   mongo:
     image: mongo:latest
@@ -6,7 +6,6 @@ services:
     container_name: mongo
     ports:
       - "27017:27017"
-
   rabbit:
     image: rabbitmq:3.8.1-management
     container_name: rabbit
@@ -17,7 +16,6 @@ services:
     expose:
       - 5672
       - 15672
-
   azure-storage:
     image: azure-storage
     build:
@@ -29,8 +27,7 @@ services:
       - "4001:80"
     environment:
       - PORT=80
-      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING} 
-
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}
   video-streaming:
     image: video-streaming
     build:
@@ -53,7 +50,6 @@ services:
     depends_on:
       - rabbit
       - mongo
-
   history:
     image: history
     build:
