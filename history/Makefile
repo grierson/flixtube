@@ -1,15 +1,13 @@
 .PHONY: run test docker-build docker-run docker-stop repl
 
+repl:
+	clj -M:repl/conjure
+
 run:
 	clojure -M -m history.main
 
 test:
 	clojure -X:test
-
-repl:
-	clj -m nrepl.cmdline \
-    --middleware "[cider.nrepl/cider-middleware]" \
-    --interactive
 
 docker-build:
 	docker build . -t grierson/history

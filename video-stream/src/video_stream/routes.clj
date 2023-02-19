@@ -14,13 +14,14 @@
   (:import (org.bson.types ObjectId)
            (com.rabbitmq.client ConnectionFactory)))
 
-(def HISORY-HOST (System/getenv "HISTORY_HOST"))
-(def HISORY-PORT (System/getenv "HISTORY_PORT"))
 (def VIDEO-STORAGE-HOST (System/getenv "VIDEO_STORAGE_HOST"))
 (def VIDEO-STORAGE-PORT (System/getenv "VIDEO_STORAGE_PORT"))
+(def VIDEO-STORAGE-URL
+  (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path="))
+
 (def DB-HOST (System/getenv "DBHOST"))
 (def DB-COLLECTION (System/getenv "DBCOLLECTION"))
-(def VIDEO-STORAGE-URL (str "http://" VIDEO-STORAGE-HOST ":" VIDEO-STORAGE-PORT "/video?path="))
+
 (def RABBIT_URI (System/getenv "RABBIT"))
 (def VIEWED_EXCHANGE (System/getenv "VIEWED_EXCHANGE"))
 
@@ -39,7 +40,10 @@
 (defn get-video [id]
   (let  [{:keys [db]} (mg/connect-via-uri DB-HOST)
          video-id (ObjectId. id)
-         {:keys [videoPath]} (mc/find-one-as-map db DB-COLLECTION {:_id video-id})]
+         {:keys [videoPath]} (mc/find-one-as-map
+                              db
+                              DB-COLLECTION
+                              {:_id video-id})]
     videoPath))
 
 (defn viewed
