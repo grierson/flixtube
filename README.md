@@ -12,22 +12,12 @@ Bootstrapping microservices with docker and kubernetes and terraform in clj
 * `cd local-infra`
 * `terraform apply`
 * `terraform output --raw az_storage_connection_string` (Add to .env)
-
-
-* `Find way to automate seeding mongo with these values`
-
-Create Database: video-streaming
-Create Collection: videos
-Add record
-
-{
-    "_id" : ObjectId("5d9e690ad76fe06a3d7ae416"),
-    "videoPath" : "bunny.webm"
-}
-
 * `terraform destroy`
 
 ## Explaination
+
+`local-infra` - Create Azure blob storage and uploads videos
+`mongo-seed` - Create collection and adds record for video path
 
 ### Services
 
