@@ -26,3 +26,15 @@ Add record
 }
 
 * `terraform destroy`
+
+## Explaination
+
+### Services
+
+* Video storage - Access Azure to fetch file
+* Video stream - Call Video storage service
+* History - Log which videos are viewed 
+
+## Infa
+
+* local-infra - for running locally

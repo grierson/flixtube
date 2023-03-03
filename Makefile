@@ -1,7 +1,4 @@
-.PHONY: all up down reload cart catalog video
-
-all:
-	echo "all"
+.PHONY: up down reload
 
 up:
 	docker-compose up --build
@@ -9,17 +6,5 @@ up:
 down:
 	docker-compose down
 
-reboot:
-	docker-compose down && docker-compose up --build
-
-cart:
-	echo "start cart";
-	cd cart/ && make run
-
-catalog:
-	echo "start catalog";
-	cd catalog/ && make run
-
-video:
-	echo "start video";
-	cd video/ && make run
+reboot: down up
+	echo "reboot"
