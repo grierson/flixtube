@@ -25,7 +25,8 @@
 (def RABBIT_URI (System/getenv "RABBIT"))
 (def VIEWED_EXCHANGE (System/getenv "VIEWED_EXCHANGE"))
 
-(defn create-channel []
+(defn create-channel
+  []
   (try
     (let [factory (ConnectionFactory.)
           _ (.setUri factory RABBIT_URI)
@@ -37,7 +38,8 @@
       (prn "Failed to connect to rabbit")
       (prn e))))
 
-(defn get-video [id]
+(defn get-video-path
+  [id]
   (let  [{:keys [db]} (mg/connect-via-uri DB-HOST)
          video-id (ObjectId. id)
          {:keys [videoPath]} (mc/find-one-as-map
@@ -50,7 +52,8 @@
   [channel video-path]
   (.basicPublish channel VIEWED_EXCHANGE "" nil (.getBytes video-path)))
 
-(defn app []
+(defn app
+  []
   (let [channel (create-channel)]
     (ring/ring-handler
      (ring/router
@@ -62,7 +65,7 @@
          {:parameters {:query {:id string?}}
           :handler
           (fn [{{{:keys [id]} :query} :parameters}]
-            (let [video-path (get-video id)
+            (let [video-path (get-video-path id)
                   video-url (str VIDEO-STORAGE-URL video-path)
                   response (client/get video-url {:as :stream})]
               (do
