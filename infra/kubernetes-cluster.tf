@@ -1,5 +1,5 @@
 resource "azurerm_kubernetes_cluster" "cluster" {
-  name                = var.name
+  name                = "${var.name}0k8"
   location            = var.location
   resource_group_name = azurerm_resource_group.flixtube.name
   dns_prefix          = var.name

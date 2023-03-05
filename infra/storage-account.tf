@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "flixtubestorage" {
-  name                     = "griersonflixtubestorage"
+  name                     = "${var.name}0sa"
   resource_group_name      = azurerm_resource_group.flixtube.name
   location                 = var.location
   account_tier             = "Standard"

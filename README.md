@@ -9,9 +9,10 @@ Bootstrapping microservices with docker and kubernetes and terraform in clj
 
 ## Local
 
-* `cd local-infra`
+* `cd infra`
 * `terraform apply`
 * `terraform output --raw az_storage_connection_string` (Add to .env)
+* ``
 * `terraform destroy`
 
 ## Explaination
