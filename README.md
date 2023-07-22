@@ -4,28 +4,28 @@ Bootstrapping microservices with docker and kubernetes and terraform in clj
 
 ## Setup
 
-* <http://localhost:4001/video?path=bunny.mp4> - Video storage
-* <http://localhost:4002/video?id=5d9e690ad76fe06a3d7ae416> - Video stream
+- `cp .env.example .env`
+- `cd infra`
+- `az login`
+- `terraform init`
+- `terraform apply`
+- make a cup of tea
+- `terraform output --raw az_storage_connection_string`
+- Copy result into `.env` as `AZURE_STORAGE_CONNECTION_STRING` value
+- `cd ..` (Back to root)
+- `make up` (Runs Docker compose)
+- When done - `terraform destroy`
 
-## Local
+## Usage
 
-* `cd infra`
-* `terraform apply`
-* `terraform output --raw az_storage_connection_string` (Add to .env)
-* ``
-* `terraform destroy`
+- <http://localhost:4001/video?path=bunny.webm> - Video storage
+- <http://localhost:4002/video?id=5d9e690ad76fe06a3d7ae416> - Video stream
 
 ## Explaination
 
-`local-infra` - Create Azure blob storage and uploads videos
-`mongo-seed` - Create collection and adds record for video path
-
-### Services
-
-* Video storage - Access Azure to fetch file
-* Video stream - Call Video storage service
-* History - Log which videos are viewed 
-
-## Infa
-
-* local-infra - for running locally
+- `infra` - Create Azure blob storage and uploads videos
+- `mongo-seed` - Create Monogo collection and adds record for video path
+- `Video storage` - Azure gateway to fetch video
+- `Video stream` - Stream video in brower
+- `History` - Consume Video stream events to log what videos
+  have been watched and by who
